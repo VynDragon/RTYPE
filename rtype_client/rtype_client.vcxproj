@@ -18,6 +18,15 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\common\bus.h" />
+    <ClInclude Include="..\common\common.h" />
+    <ClInclude Include="..\common\IBus.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\common\bus.cpp" />
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4024F059-AB62-46CC-A79F-6FBEFCB833A5}</ProjectGuid>
     <RootNamespace>rtype_client</RootNamespace>
@@ -117,8 +126,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
