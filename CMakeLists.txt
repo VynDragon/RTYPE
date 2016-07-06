@@ -1,0 +1,5 @@
+cmake_minimum_required (VERSION 3.5)
+project (RTYPE)
+add_subdirectory (./module_network)
+add_subdirectory (./rtype_client)
+add_subdirectory (./rtype_server)
