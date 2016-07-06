@@ -2,8 +2,6 @@
 
 Module_Network::Module_Network()
 {
-
-
 }
 
 Module_Network::~Module_Network()

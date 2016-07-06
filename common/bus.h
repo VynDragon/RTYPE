@@ -57,12 +57,12 @@ public:
 	{
 	private:
 		Module			*module;
-		delModuleType	destructor;
+		delModuleType		destructor;
 		ModuleWrapper();
 	public:
-		ModuleWrapper(void *getModule, void *delModule);
+		ModuleWrapper(getModuleType getModule, delModuleType delModule);
 		~ModuleWrapper();
-		int	in(const BusMessage& message);
+		int			in(const BusMessage& message);
 	};
 	Bus();
 	virtual ~Bus();

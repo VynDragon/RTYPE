@@ -1,5 +1,6 @@
 #include "bus.h"
 #include <iostream>
+#include <dlfcn.h>
 
 Bus::Bus()
 {
@@ -43,32 +44,32 @@ int	Bus::addModule(const std::string& module)
 		return GetLastError();
 	}
 #elif defined(OS_LINUX)
-	void *handle = dlopen(module, RTLD_LAZY);
+	void *handle = dlopen(module.c_str(), RTLD_LAZY);
 	if (!handle)
 	{
 		std::string error = MODULE_LOAD_ERROR;
-		throw BusException(error + std::to_string(dlerror()));
+		throw BusException(error + dlerror());
 		return 1;
 	}
 	void *getModule = dlsym(handle, "getModule");
 	if (!getModule)
 	{
 		std::string error = MODULE_LOAD_ERROR;
-		throw BusException(error + std::to_string(dlerror()));
+		throw BusException(error + dlerror());
 		return 1;
 	}
 	void *delModule = dlsym(handle, "delModule");
 	if (!delModule)
 	{
 		std::string error = MODULE_LOAD_ERROR;
-		throw BusException(error + std::to_string(dlerror()));
+		throw BusException(error +dlerror());
 		return 1;
 	}
 	void *getModuleName = dlsym(handle, "getModuleName");
 	if (!getModuleName)
 	{
 		std::string error = MODULE_LOAD_ERROR;
-		throw BusException(error + std::to_string(dlerror()));
+		throw BusException(error + dlerror());
 		return 1;
 	}
 #endif
@@ -77,7 +78,7 @@ int	Bus::addModule(const std::string& module)
 	if (ifType != moduleTypes.end())
 	{
 		std::string error = MODULE_LOAD_ERROR;
-		throw BusException(error + std::to_string(GetLastError()));
+		throw BusException(error + "didn't find module");
 		return 1;
 	}
 	moduleTypes[type.getModuleName()] = type;
@@ -103,7 +104,7 @@ int Bus::in(const std::string& type, const void *data, const std::string& regexS
 	return 0;
 }
 
-Bus::ModuleWrapper::ModuleWrapper(void * getModule, void * delModule)
+Bus::ModuleWrapper::ModuleWrapper(getModuleType getModule, delModuleType delModule)
 {
 	this->module = (*(getModuleType)getModule)();
 	this->destructor = (delModuleType)getModule;
