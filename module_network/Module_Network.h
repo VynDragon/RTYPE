@@ -7,7 +7,9 @@ class Module_Network : public Module
 {
 public:
 	Module_Network();
-	~Module_Network();
-	int	in(const std::string& type, const void *data);
+	virtual ~Module_Network();
+	virtual int	setUp(IBus *bus);
+	virtual int	input(const std::string& type, const void *data, IBus *bus);
+	virtual int	tearDown(IBus *bus);
 private:
 };

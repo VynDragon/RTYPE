@@ -1,16 +1,21 @@
 #pragma once
 
 #include "common.h"
+#include "IBus.h"
 #include <string>
+
 
 class Module
 {
 public:
-	virtual int	in(const std::string& type, const void *data) = 0;
+	virtual int		setUp(IBus *bus) = 0;
+	virtual int		input(const std::string& type, const void *data, IBus *bus) = 0;
+	virtual int		tearDown(IBus *bus) = 0;
 private:
 
 };
 
+//typedef int (Module::*moduleInputType)(const std::string&, const void*, IBus*);
 typedef Module* (*getModuleType)();
 typedef void (*delModuleType)(void*);
 typedef const char* (*getModuleNameType)();

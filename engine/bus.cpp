@@ -9,7 +9,12 @@ Bus::Bus()
 
 Bus::~Bus()
 {
-
+	auto it = modules.begin();
+	while (it != modules.end())
+	{
+		delete it->second;
+		it++;
+	}
 }
 
 int	Bus::addModule(const std::string& module)
@@ -101,30 +106,66 @@ int Bus::add(const std::string& address, const std::string& type)
 
 int Bus::in(const std::string& type, const void *data, const std::string& regexString)
 {
+	this->iolock.lock();
+	this->iolock.unlock();
 	return 0;
 }
 
-Bus::ModuleWrapper::ModuleWrapper(getModuleType getModule, delModuleType delModule)
+Bus::ModuleWrapper::ModuleWrapper(const getModuleType& getModule, const delModuleType& delModule)
 {
 	this->module = (*(getModuleType)getModule)();
-	this->destructor = (delModuleType)getModule;
+	this->destructor = (delModuleType)delModule;
 }
 
 Bus::ModuleWrapper::~ModuleWrapper()
 {
+	this->destructor(this->module);
 }
 
-int Bus::ModuleWrapper::in(const BusMessage & message)
+int		Bus::ModuleWrapper::setUp(IBus *bus)
 {
-	return 0;
+	return this->module->setUp(bus);
+}
+int		Bus::ModuleWrapper::input(const std::string& type, const void *data, IBus *bus)
+{
+	return this->module->input(type, data, bus);
+}
+int		Bus::ModuleWrapper::tearDown(IBus *bus)
+{
+	return this->module->tearDown(bus);
 }
 
-Bus::BusMessage::BusMessage(const unsigned long & usrnbr, const std::string & type, const void * data, destructorTypeConst deletedata) : data(data), deletedata(deletedata)
+Bus::BusMessage::BusMessage(const std::string& destination, const std::string & type, Bus::BusMessage::messageData *data)
 {
-	this->usrnbr = usrnbr;
 	this->type = type;
+	this->data = data;
+	this->destination = destination;
 }
 
 Bus::BusMessage::~BusMessage()
 {
+	if (data)
+	{
+		data->lock.lock();
+		data->usrnbr -= 1;
+		if (data->usrnbr <= 0 && data->data)
+		{
+			data->deleteData(data->data);
+		}
+		data->lock.unlock();
+	}
+}
+
+inputRunnable	Bus::out()
+{
+	this->iolock.lock();
+	if (this->queue.size() > 0)
+	{
+		BusMessage* message = this->queue.front();
+		this->queue.pop();
+		this->iolock.unlock();
+		return inputRunnable(true, this->modules[message->destination], message->type, message->data->data, this);
+	}
+	this->iolock.unlock();
+	return inputRunnable(false);
 }
