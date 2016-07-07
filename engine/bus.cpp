@@ -1,6 +1,5 @@
 #include "bus.h"
 #include <iostream>
-#include <dlfcn.h>
 
 Bus::Bus()
 {
