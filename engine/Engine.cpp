@@ -2,20 +2,14 @@
 #include <chrono>
 #include <ratio>
 
-Engine::Engine(const std::vector<std::string>& modules, const std::map<std::string, std::string>& startModules, int nbworker)
+Engine::Engine(const std::vector<std::string>& modules, int nbworker)
 {
   auto module = modules.begin();
-  auto startModule = startModules.begin();
   Bus *bbus = new Bus();
   while (module != modules.end())
   {
 	bbus->addModule(*module);
 	module++;
-  }
-  while (startModule != startModules.end())
-  {
-	bbus->add(startModule->first, startModule->second);
-	startModule++;
   }
   bus = bbus;
   for (int i = 0; i < nbworker; i++)
@@ -45,7 +39,7 @@ int	Engine::doWork()
 		workCharge = bus->out();
 	}
 	work.unlock();
-	int ret = workCharge.module->input(workCharge.message->type, workCharge.message->data, workCharge.bus);
+	int ret = workCharge.module->input(workCharge.message->type, workCharge.message->data->data, workCharge.bus);
 	delete workCharge.message;
 	return ret;
 }
@@ -56,4 +50,8 @@ void		Engine::start()
 	{
 		(*it)->start();
 	}
+}
+Bus	*Engine::getBus()
+{
+	return this->bus;
 }

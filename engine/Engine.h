@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <string>
 #include <exception>
 #include <mutex>
@@ -39,11 +39,12 @@ public:
 		Engine		*engine;
 		std::thread	*thread = 0;
 	};
-	Engine(const std::vector<std::string>& modules, const std::map<std::string, std::string>& startModules, int nbworker);
+	Engine(const std::vector<std::string>& modules, int nbworker);
 	~Engine();
-	void		start();
-	void		stop();
+	void			start();
+	void			stop();
 	int			doWork();
+	Bus			*getBus();
 private:
 	Engine();
 	std::mutex		work;

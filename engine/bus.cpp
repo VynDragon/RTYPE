@@ -102,7 +102,14 @@ int Bus::add(const std::string& address, const std::string& type)
 		return 1;
 	}
 	modules[address] = new ModuleWrapper(moduleTypes[type].getModule, moduleTypes[type].delModule);
-	modules[address]->setUp(this);
+	if (modules[address]->setUp(this) != 0)
+	{
+		std::string error = MODULE_ADD_ERROR;
+		error += "setup of module ";
+		error += address;
+		throw BusException(error + " returned non zero value");
+		return 1;
+	}
 	return 0;
 }
 
@@ -170,7 +177,8 @@ Bus::BusMessage::~BusMessage()
 		data->usrnbr -= 1;
 		if (data->usrnbr <= 0 && data->data)
 		{
-			data->deleteData(data->data);
+			if (data->deleteData)
+				data->deleteData(data->data);
 			data->lock.unlock();
 			delete data;
 		}
