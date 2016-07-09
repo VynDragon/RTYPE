@@ -12,4 +12,5 @@ public:
 	virtual int	input(const std::string& type, const void *data, IBus *bus);
 	virtual int	tearDown(IBus *bus);
 private:
+	int count = 0;
 };

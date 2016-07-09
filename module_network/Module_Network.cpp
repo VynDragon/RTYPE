@@ -13,11 +13,24 @@ Module_Network::~Module_Network()
 int	Module_Network::setUp(IBus *bus)
 {
 	std::cout << "setUp" << std::endl;
+	bus->in("smes", nullptr, nullptr);
 	return 0;
 }
 int	Module_Network::input(const std::string& type, const void *data, IBus *bus)
 {
-	std::cout << "input" << std::endl;
+	count++;
+	//std::cout << "input: " << type << std::endl;
+	if (data == nullptr)
+	{
+		//std::cout << "data is null " << std::endl;
+	}
+	int kek = 0;
+	while (kek < 1000000) { kek++;}
+	for (int i = 0; i < 1; i++)
+	{
+		if (count < 100)
+			bus->in("smes", nullptr, nullptr);
+	}
 	return 0;
 }
 int	Module_Network::tearDown(IBus *bus)

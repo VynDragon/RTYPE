@@ -41,10 +41,13 @@ public:
 	};
 	Engine(const std::vector<std::string>& modules, const std::map<std::string, std::string>& startModules, int nbworker);
 	~Engine();
+	void		start();
+	void		stop();
 	int			doWork();
 private:
 	Engine();
 	std::mutex		work;
 	std::vector<Worker*>	workers;
+public:
 	Bus			*bus;
 };

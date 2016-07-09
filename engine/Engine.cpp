@@ -45,5 +45,15 @@ int	Engine::doWork()
 		workCharge = bus->out();
 	}
 	work.unlock();
-	return workCharge.module->input(workCharge.type, workCharge.data, workCharge.bus);
+	int ret = workCharge.module->input(workCharge.message->type, workCharge.message->data, workCharge.bus);
+	delete workCharge.message;
+	return ret;
+}
+
+void		Engine::start()
+{
+	for (auto it = workers.begin(); it != workers.end(); it++)
+	{
+		(*it)->start();
+	}
 }

@@ -1,5 +1,6 @@
 #include "bus.h"
 #include <iostream>
+#include <regex>
 
 Bus::Bus()
 {
@@ -11,6 +12,7 @@ Bus::~Bus()
 	auto it = modules.begin();
 	while (it != modules.end())
 	{
+		it->second->tearDown(this);
 		delete it->second;
 		it++;
 	}
@@ -100,12 +102,31 @@ int Bus::add(const std::string& address, const std::string& type)
 		return 1;
 	}
 	modules[address] = new ModuleWrapper(moduleTypes[type].getModule, moduleTypes[type].delModule);
+	modules[address]->setUp(this);
 	return 0;
 }
 
-int Bus::in(const std::string& type, const void *data, const std::string& regexString)
+int Bus::in(const std::string& type, const void *data, destructorTypeConst deleteData, const std::string& regexString)
 {
 	this->iolock.lock();
+	std::regex regex(regexString);
+	BusMessage::messageData *mdata = new BusMessage::messageData(1, data, deleteData);
+	mdata->lock.lock();
+	for (auto it = modules.begin(); it != modules.end(); it++)
+	{
+		if (std::regex_match(it->first, regex, std::regex_constants::match_not_null | std::regex_constants::match_default))
+		{
+			mdata->usrnbr += 1;
+			queue.push(new BusMessage(it->first, type, mdata));
+		}
+	}
+	if (mdata->usrnbr <= 1)
+	{
+		mdata->lock.unlock();
+		delete mdata;
+	}
+	mdata->usrnbr -= 1;
+	mdata->lock.unlock();
 	this->iolock.unlock();
 	return 0;
 }
@@ -150,8 +171,16 @@ Bus::BusMessage::~BusMessage()
 		if (data->usrnbr <= 0 && data->data)
 		{
 			data->deleteData(data->data);
+			data->lock.unlock();
+			delete data;
 		}
-		data->lock.unlock();
+		else if (data->usrnbr <= 0)
+		{
+			data->lock.unlock();
+			delete data;
+		}
+		else
+			data->lock.unlock();
 	}
 }
 
@@ -163,7 +192,7 @@ inputRunnable	Bus::out()
 		BusMessage* message = this->queue.front();
 		this->queue.pop();
 		this->iolock.unlock();
-		return inputRunnable(true, this->modules[message->destination], message->type, message->data->data, this);
+		return inputRunnable(true, this->modules[message->destination], message, this);
 	}
 	this->iolock.unlock();
 	return inputRunnable(false);

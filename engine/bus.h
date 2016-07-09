@@ -16,28 +16,7 @@
 #define MODULE_LOAD_ERROR "Module loading error: "
 #define MODULE_ADD_ERROR "Module adding error: "
 
-typedef void (*destructorType)(const void*);
-typedef const destructorType destructorTypeConst;
-
-typedef struct inputRunnable {
-	inputRunnable(bool valid, Module *module, const std::string& type, const void *data, IBus *bus)
-	{
-		this->valid = valid;
-		this->module = module;
-		this->type = type;
-		this->data = data;
-		this->bus = bus;
-	}
-	inputRunnable(bool valid)
-	{
-		this->valid = valid;
-	}
-	bool			valid;
-	Module			*module;
-	std::string		type;
-	const void		*data;
-	IBus			*bus;
-}	inputRunnable;
+struct inputRunnable;
 
 class BusException : public std::exception
 {
@@ -57,13 +36,14 @@ class Bus : public IBus
 {
 public:
 	class BusMessage {
-		typedef struct {
+	public:
+ 		typedef struct messageData {
+			messageData(unsigned long usrnbr, const void* data, destructorTypeConst deleteData) : usrnbr(usrnbr), data(data), deleteData(deleteData) {}
 			std::mutex		lock;
 			unsigned long 		usrnbr;
 			const void 		*data;
 			destructorTypeConst	deleteData;
 		}	messageData;
-	public:
 		messageData	*data;
 		std::string	type;
 		std::string	destination;
@@ -95,11 +75,30 @@ public:
 	virtual ~Bus();
 	int 				addModule(const std::string& module);
 	int				add(const std::string& address, const std::string& type);
-	int 				in(const std::string& type, const void *data, const std::string& regexString = ".*");
+	int 				in(const std::string& type, const void *data, destructorTypeConst deleteData, const std::string& regexString = ".*");
 	inputRunnable			out();
 protected:
+public:
 	std::queue<BusMessage*>			queue; // !! share BusMessage instances's data		
 	std::mutex				iolock;
 	std::map<std::string, moduleType>	moduleTypes;
 	std::map<std::string, ModuleWrapper*>	modules;
 };
+
+typedef struct inputRunnable {
+	inputRunnable(bool valid, Module *module, Bus::BusMessage *message, IBus *bus)
+	{
+		this->valid = valid;
+		this->module = module;
+		this->message = message;
+		this->bus = bus;
+	}
+	inputRunnable(bool valid)
+	{
+		this->valid = valid;
+	}
+	bool				valid;
+	Module				*module;
+	Bus::BusMessage			*message;
+	IBus				*bus;
+}	inputRunnable;
