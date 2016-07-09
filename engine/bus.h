@@ -78,7 +78,6 @@ public:
 	int 				in(const std::string& type, const void *data, destructorTypeConst deleteData, const std::string& regexString = ".*");
 	inputRunnable			out();
 protected:
-public:
 	std::queue<BusMessage*>			queue; // !! share BusMessage instances's data		
 	std::mutex				iolock;
 	std::map<std::string, moduleType>	moduleTypes;

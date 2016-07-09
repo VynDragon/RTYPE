@@ -48,6 +48,5 @@ private:
 	Engine();
 	std::mutex		work;
 	std::vector<Worker*>	workers;
-public:
 	Bus			*bus;
 };
