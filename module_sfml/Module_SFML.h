@@ -6,7 +6,7 @@
 
 class Module_SFML;
 
-typedef void (Module_SFML::*tfunctionType)(const void*, IBus*);
+typedef int (Module_SFML::*tfunctionType)(const void*, IBus*);
 
 class Module_SFML : public Module
 {
@@ -19,9 +19,11 @@ public:
 private:
 	sf::RenderWindow					*window;
 	static const std::map<std::string, tfunctionType>	tfunctions;
-	void							tick(const void *data, IBus *bus);
-	void							addSprite(const void *data, IBus *bus);
-	void							removeSprite(const void *data, IBus *bus);
-	void							setSpritePos(const void *data, IBus *bus);
-	void							update(const void *data, IBus *bus);
+	std::map<std::string, sf::Texture*>			textures;
+	std::map<std::string, sf::Sprite*>			sprites;
+	int							tick(const void *data, IBus *bus);
+	int							addSprite(const void *data, IBus *bus);
+	int							removeSprite(const void *data, IBus *bus);
+	int							setSpritePos(const void *data, IBus *bus);
+	int							update(const void *data, IBus *bus);
 };
