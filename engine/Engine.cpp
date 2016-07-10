@@ -35,7 +35,7 @@ int	Engine::doWork()
 	inputRunnable workCharge = bus->out();
 	while (!workCharge.valid)
 	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(2));
+		std::this_thread::sleep_for(WAIT_SLEEP_TIME);
 		workCharge = bus->out();
 	}
 	work.unlock();

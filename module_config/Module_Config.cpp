@@ -1,6 +1,7 @@
 #include "Module_Config.h"
 #include "local.h"
 #include "../common/templatedTools.h"
+#include "msg.h"
 #include <sstream>
 #include <fstream>
 #include <iostream>

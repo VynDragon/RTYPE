@@ -8,7 +8,7 @@ int	main(int ac, const char **av)
 {
 	(void)ac;
 	(void)av;
-	std::vector<std::string> modules = {"../lib/libmodule_network.so", "../lib/libmodule_config.so"};
+	std::vector<std::string> modules = {"../lib/libmodule_network.so", "../lib/libmodule_config.so", "../lib/libmodule_tick.so"};
 	/*for (int i = 0; i < 15; i++)
 	{
 		std::string saude = "netwurk";
@@ -16,6 +16,7 @@ int	main(int ac, const char **av)
 	}*/
 	Engine	*engine = new Engine(modules, 5);
 	engine->getBus()->add("network", "network");
+	engine->getBus()->add("tick", "tick");
 	engine->getBus()->add("config", "config");
 	engine->start();
 	Engine::Worker::run(engine);
