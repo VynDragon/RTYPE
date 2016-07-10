@@ -27,6 +27,6 @@ public:
 	virtual int	input(const std::string& type, const void *data, IBus *bus);
 	virtual int	tearDown(IBus *bus);
 private:
-	uint		fps = 60;
+	uint		ips = 60;
 	timespec	lastTick;
 };

@@ -1,5 +1,6 @@
 #pragma once
 #include "../common/common.h"
+#include "../common/messages.h"
 #include "../common/module.h"
 #include "../common/IBus.h"
 
@@ -32,6 +33,10 @@ public:
 	}
 };
 
+class ExitException : public std::exception
+{
+};
+
 class Bus : public IBus
 {
 public:
@@ -60,6 +65,7 @@ public:
 	class ModuleWrapper : public Module
 	{
 	private:
+		std::mutex		inputLock;
 		Module			*module;
 		delModuleType		destructor;
 		ModuleWrapper();

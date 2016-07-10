@@ -24,12 +24,12 @@ int	Module_Tick::input(const std::string& type, const void *data, IBus *bus)
 	if (type == MSG_CONFIG_RESULT)
 	{
 		std::pair<std::string, std::string>* sdata = (std::pair<std::string, std::string>*)data;
-		if (sdata->first == "fps")
+		if (sdata->first == "ips")
 		{
-			this->fps = std::stoi(sdata->second);
-			if (this->fps <= 0)
+			this->ips = std::stoi(sdata->second);
+			if (this->ips <= 0)
 			{
-				this->fps = 60;
+				this->ips = 60;
 			}
 		}
 	}
@@ -38,7 +38,7 @@ int	Module_Tick::input(const std::string& type, const void *data, IBus *bus)
 		timespec time;
 		clock_gettime(CLOCK_REALTIME, &time);
 		double actual_time = (time.tv_sec - lastTick.tv_sec) + (time.tv_nsec - lastTick.tv_nsec) / 1000000000.0;
-		while (actual_time < 1.0 / (double)this->fps)
+		while (actual_time < 1.0 / (double)this->ips)
 		{
 			std::this_thread::sleep_for(WAIT_SLEEP_TIME);
 			clock_gettime(CLOCK_REALTIME, &time);

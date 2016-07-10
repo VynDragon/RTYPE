@@ -8,7 +8,7 @@ int	main(int ac, const char **av)
 {
 	(void)ac;
 	(void)av;
-	std::vector<std::string> modules = {"../lib/libmodule_network.so", "../lib/libmodule_config.so", "../lib/libmodule_tick.so"};
+	std::vector<std::string> modules = {"../lib/libmodule_network.so", "../lib/libmodule_config.so", "../lib/libmodule_tick.so", "../lib/libmodule_sfml.so"};
 	/*for (int i = 0; i < 15; i++)
 	{
 		std::string saude = "netwurk";
@@ -18,6 +18,7 @@ int	main(int ac, const char **av)
 	engine->getBus()->add("network", "network");
 	engine->getBus()->add("tick", "tick");
 	engine->getBus()->add("config", "config");
+	engine->getBus()->add("sfml", "sfml");
 	engine->start();
 	Engine::Worker::run(engine);
 	//std::this_thread::sleep_for(std::chrono::seconds(15));

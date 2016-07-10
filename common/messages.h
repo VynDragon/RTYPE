@@ -1,3 +1,3 @@
 #pragma once
 
-#define MSG_TICK "tick"
+#define MSG_EXIT "exitallmodulesandkilleverything"

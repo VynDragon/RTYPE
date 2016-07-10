@@ -115,6 +115,8 @@ int Bus::add(const std::string& address, const std::string& type)
 
 int Bus::in(const std::string& type, const void *data, destructorTypeConst deleteData, const std::string& regexString)
 {
+	if (type == MSG_EXIT)
+		throw ExitException();
 	this->iolock.lock();
 	std::regex regex(regexString);
 	BusMessage::messageData *mdata = new BusMessage::messageData(1, data, deleteData);
@@ -155,7 +157,10 @@ int		Bus::ModuleWrapper::setUp(IBus *bus)
 }
 int		Bus::ModuleWrapper::input(const std::string& type, const void *data, IBus *bus)
 {
-	return this->module->input(type, data, bus);
+	inputLock.lock();
+	auto ret = this->module->input(type, data, bus);
+	inputLock.unlock();
+	return ret;
 }
 int		Bus::ModuleWrapper::tearDown(IBus *bus)
 {
