@@ -4,6 +4,15 @@
 #include <iostream>
 #include <chrono>
 
+int clock_gettime(int, struct timespec *spec)
+{
+	__int64 wintime; GetSystemTimeAsFileTime((FILETIME*)&wintime);
+	wintime -= 116444736000000000i64;
+	spec->tv_sec = wintime / 10000000i64;
+	spec->tv_nsec = wintime % 10000000i64 * 100;
+	return 0;
+}
+
 Module_Tick::Module_Tick()
 {
 }
