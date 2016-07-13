@@ -63,6 +63,7 @@ int	Module_SFML::tick(const void *data, IBus *bus)
 		}
 		event = new sf::Event();
         }
+        update(data, bus); // good enough if this engine isn't reused
         return 0;
 }
 
@@ -119,6 +120,7 @@ int	Module_SFML::update(const void *data, IBus *bus)
 {
 	(void)data;
 	(void)bus;
+	window->clear();
 	for (auto it = sprites.begin(); it != sprites.begin(); it++)
 	{
 		window->draw(*it->second);

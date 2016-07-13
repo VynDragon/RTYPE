@@ -1,0 +1,176 @@
+Network Working Group						  C.Baud
+Requests for Comments: 1337					 Epitech
+Standards Track						       July 2016
+
+			Interbus Communication Protocol
+
+Status of this Memo
+
+	This document specifies an Internet standards track protocol for
+	the Internet community, and requests discussion and suggestions
+	for improvements.  Please refer to the current edition of the
+	"Internet Official Protocol Standards" (STD 1) for the
+	standardization state and status of this protocol.  Distribution
+	of this memo is unlimited.
+
+Copyright Notice
+
+	Copyright (C) The Internet Society (2016).  All Rights Reserved.
+
+Abstract
+	
+	This document provide the description of the Interbus 
+	Communication Protocol, a simple UDP way of transmitting data
+	while providing optional acks.
+
+Table of Contents
+
+	1. Introduction ...............................................1
+	2. Packet Format ..............................................2
+	3. Session Management .........................................2
+	4. Security Considerations ....................................
+	Authors' Addresses ............................................
+	Full Copyright Statement ......................................
+
+1. Introduction
+
+	This protocol is intended to provide the communication system
+	for a R-TYPE style game for the R-TYPE project of the Epitech 
+	School. It is to be used between the clients and servers  
+	computers. The clients and servers are typically Personal
+	Computers.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Baud				Protocol			[Page 1]
+
+RFC 1337	      Interbus Communication Protocol	       July 2016
+
+2. Packet Format
+
+	A Interbus Communication Protocol packet, transmitted trough the UDP
+	protocol, must follow the following format:
+
+	------------------------------------------------------
+	| 8 Bit identifier                                   |
+	|----------------------------------------------------|
+	| 16 Bit data size                                   |
+	|----------------------------------------------------|
+	| Data (maximum 65535 bytes, minus the ipv4, udp, and|
+	| Interbus Communication Protocol headers size)      |
+	------------------------------------------------------
+	
+	The identifier can take three value:
+	
+	- 0 is an ACK packet, which must be sent the client back to the
+	emitter of a packet which identifier value is 2. This packet
+	data size bits are set to zero, and its data is inexistant.
+
+	- 1 is a normal packet, which do not warrant any special action
+	when received.
+
+	- 2 is an important packet, which trigger the sending of an ACK
+	packet by the recipient. If the sender of this kind of packet
+	does not receive an ACK as a return after an 
+	implementation-designed time, it must send the packet again.
+	
+	- 3 is a disconnection package. The client is signaling the
+	server is won't send any more package and is to be considered
+	disconnected. this packet data size bits are set to zero, and
+	its data is inexistant.
+	
+3. Session Management
+
+	When a server receive the connection of a new client, it must
+	keep track of its connection status.
+	
+	When a new client send a packet through UDP, it is considered
+	connected.
+	
+	When sending important packets, if the ACK package is not
+	received after an implementation-designed number of retries, the
+	client is considered disconnected.
+	
+	When a disconnection package is received, the client is
+	considered disconnected.
+	
+	When a client is connected, packet can be sent to it by the
+	server.
+	
+	When a client is disconnected, messages mustn't be sent to it by
+	the server.
+
+
+Baud				Protocol			[Page 2]
+
+RFC 1337	      Interbus Communication Protocol	       July 2016
+
+4. Security Considerations
+
+	This protocol isn't intended to provide any kind of security.
+
+Author's Address
+
+	Camille BAUD
+	Résidence Dali II
+	Rue de la Rize
+	69003 LYON
+	France
+
+	EMail: camille.baud@epitech.eu
+	
+Full Copyright Statement
+
+	Copyright (C) The Internet Society (date).  All Rights Reserved.
+
+	This document and translations of it may be copied and furnished
+	to others, and derivative works that comment on or otherwise
+	explain it or assist in its implementation may be prepared,
+	copied, published and distributed, in whole or in part, without
+	restriction of any kind, provided that the above copyright
+	notice and this paragraph are included on all such copies and
+	derivative works.  However, this document itself may not be
+	modified in any way, such as by removing the copyright notice or
+	references to the Internet Society or other Internet
+	organizations, except as needed for the purpose of developing
+	Internet standards in which case the procedures for copyrights
+	defined in the Internet Standards process must be followed, or
+	as required to translate it into languages other than English.
+	
+	The limited permissions granted above are perpetual and will not
+	be revoked by the Internet Society or its successors or assigns.
+	
+	
+	This document and the information contained herein is provided
+	on an "AS IS" basis and THE INTERNET SOCIETY AND THE INTERNET
+	ENGINEERING TASK FORCE DISCLAIMS ALL WARRANTIES, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTY THAT THE USE
+	OF THE INFORMATION HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY
+	IMPLIED WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A
+	PARTICULAR PURPOSE.
+	
+
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+Baud				Protocol			[Page 3]
