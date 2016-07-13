@@ -8,7 +8,12 @@ int	main(int ac, const char **av)
 {
 	(void)ac;
 	(void)av;
+#ifdef OS_WINDOWS
+	std::vector<std::string> modules = {"module_network.dll", "module_config.dll", "module_tick.dll", "module_sfml.dll"};
+#elif defined(OS_LINUX)
 	std::vector<std::string> modules = {"../lib/libmodule_network.so", "../lib/libmodule_config.so", "../lib/libmodule_tick.so", "../lib/libmodule_sfml.so"};
+#endif
+	
 	/*for (int i = 0; i < 15; i++)
 	{
 		std::string saude = "netwurk";

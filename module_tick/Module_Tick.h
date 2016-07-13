@@ -2,14 +2,16 @@
 
 #include "../common/common.h"
 #include "../common/module.h"
-#include <thread>
 #ifdef OS_LINUX
 #include <ctime>
 #elif defined(OS_WINDOWS)
 #define CLOCK_REALTIME 0
+#define HAVE_STRUCT_TIMESPEC 
+struct timespec { long tv_sec; long tv_nsec; };
 #include <windows.h>
 int clock_gettime(int, struct timespec *spec);
 #endif
+#include <thread>
 
 
 class Module_Tick : public Module
