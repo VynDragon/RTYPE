@@ -1,5 +1,5 @@
 #include "Module_SFML.h"
-#include "../module_tick/msg.h"
+#include "../common/messages.h"
 #include "../common/messages.h"
 #include "../common/templatedTools.h"
 #include "msg.h"
