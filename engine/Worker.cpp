@@ -35,5 +35,13 @@ void Engine::Worker::stop()
 
 void Engine::Worker::run(Engine *engine)
 {
-	while (!engine->doWork());
+	try
+	{
+		while (!engine->doWork());
+	}
+	catch(ExitException e)
+	{
+		delete engine;
+		exit(0);
+	}
 }

@@ -9,9 +9,9 @@ int	main(int ac, const char **av)
 	(void)ac;
 	(void)av;
 #ifdef OS_WINDOWS
-	std::vector<std::string> modules = {"module_network.dll", "module_config.dll", "module_tick.dll", "module_sfml.dll"};
+	std::vector<std::string> modules = {"module_network.dll", "module_config.dll", "module_tick.dll", "module_sfml.dll", "module_game_client.dll"};
 #elif defined(OS_LINUX)
-	std::vector<std::string> modules = {"../lib/libmodule_network.so", "../lib/libmodule_config.so", "../lib/libmodule_tick.so", "../lib/libmodule_sfml.so"};
+	std::vector<std::string> modules = {"./libmodule_network.so", "./libmodule_config.so", "./libmodule_tick.so", "./libmodule_sfml.so", "./libmodule_game_client.so"};
 #endif
 	
 	/*for (int i = 0; i < 15; i++)
@@ -19,14 +19,14 @@ int	main(int ac, const char **av)
 		std::string saude = "netwurk";
 		modulestoStart[saude + std::to_string(i)] = "network";
 	}*/
-	Engine	*engine = new Engine(modules, 5);
+	Engine	*engine = new Engine(modules, 1);
 	engine->getBus()->add("network", "network");
 	engine->getBus()->add("tick", "tick");
-	engine->getBus()->add("config", "config");
+	engine->getBus()->add("game", "game");
 	engine->getBus()->add("sfml", "sfml");
+	engine->getBus()->add("config", "config");
 	engine->start();
 	Engine::Worker::run(engine);
-	//std::this_thread::sleep_for(std::chrono::seconds(15));
 	delete engine;
 	return 0;
 }

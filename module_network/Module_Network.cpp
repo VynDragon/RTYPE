@@ -6,16 +6,17 @@
 #include <iostream>
 #ifdef OS_LINUX
 #include <unistd.h>
-#include <tuple>
 #include <poll.h>
-#include <cstring>
 #endif
+#include <tuple>
+#include <cstring>
 
 const std::map<std::string, tfunctionType> Module_Network::tfunctions = {
 	{MSG_NETWORK_EXPORT, &Module_Network::send_msg},
 	{MSG_NETWORK_EXPORT_ACK, &Module_Network::send_msg_ack},
 	{MSG_NETWORK_BIND, &Module_Network::bind},
 	{MSG_TICK, &Module_Network::tick},
+	{MSG_NETWORK_ADDCLIENT, &Module_Network::addclient}
 };
 
 
@@ -65,12 +66,12 @@ int	Module_Network::send_msg(const void *data, IBus *bus)
 	(void)bus;
 	std::tuple<std::string, std::string, size_t, const void*> *datee = (std::tuple<std::string, std::string, size_t, const void*> *)data;
 	ICPMsg *icpmsg = (ICPMsg *)new uint8_t[std::get<0>(*datee).size() + std::get<1>(*datee).size() + std::get<2>(*datee) + sizeof(ICPMsg)]();
-	icpmsg->identifier = 0;
+	icpmsg->identifier = 1;
 	icpmsg->datasize = std::get<2>(*datee);
 	memcpy(icpmsg->data, std::get<3>(*datee), std::get<2>(*datee)); 
 	for (auto it = clients.begin(); it != clients.end(); it++)
 	{
-		sendto(this->socket, &icpmsg, std::get<0>(*datee).size() + std::get<1>(*datee).size() + std::get<2>(*datee) + sizeof(ICPMsg), 0, (sockaddr*)&it->second, sizeof(sockaddr_in));
+		sendto(this->socket, icpmsg, std::get<0>(*datee).size() + std::get<1>(*datee).size() + std::get<2>(*datee) + sizeof(ICPMsg), 0, (sockaddr*)&it->second, sizeof(sockaddr_in));
 	}
 	return 0;	
 }
@@ -87,7 +88,7 @@ int	Module_Network::bind(const void *data, IBus *bus)
 	sockaddr_in in = {};
 	in.sin_addr.s_addr = htonl(INADDR_ANY);
 	in.sin_family = AF_INET;
-	in.sin_port = *port;
+	in.sin_port = htons(*port);
 	if (::bind(this->socket, (sockaddr*) &in, sizeof(in)) == -1)
 		return errno;
 	return 0;	
@@ -125,6 +126,7 @@ int	Module_Network::tick(const void *data, IBus *bus)
 		}
 		if (!found)
 		{
+			std::cout << "received client" << std::endl;
 			int x = 1;
 			std::string namu = "client_" + x;
 			while (clients.find(namu) != clients.end())
@@ -219,5 +221,15 @@ int			Module_Network::id3(std::string author, ICPMsg *msg, IBus *bus) // this is
 	bus->in(MSG_NETWORK_LEAVE, new std::string(addr->first), delFunction<std::string*>);
 	clients.erase(addr);
 	return 0;
+}
+
+int			Module_Network::addclient(const void *data, IBus *bus)
+{
+	std::tuple<std::string, std::string, int>* sdata = (std::tuple<std::string, std::string, int>*)data;
+	struct sockaddr_in sin;
+	inet_pton(AF_INET, std::get<1>(*sdata).c_str(), &(sin.sin_addr));
+	sin.sin_family = AF_INET;
+	sin.sin_port = htons(std::get<2>(*sdata));
+	clients[std::get<0>(*sdata)] = sin;
 }
 

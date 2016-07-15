@@ -6,12 +6,13 @@
 #ifdef OS_LINUX
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #endif
 
 #include <map>
 #include <cstdint>
 
-#define PORT 3100
+
 #define MAX_BUFFER_SIZE 2048
 
 class Module_Network;
@@ -39,6 +40,7 @@ private:
 	int							tick(const void *data, IBus *bus);
 	int							send_msg_ack(const void *data, IBus *bus);
 	int							bind(const void *data, IBus *bus);
+	int							addclient(const void *data, IBus *bus);
 	
 	int							id0(std::string author, ICPMsg *msg, IBus *bus);
 	int							id1(std::string author, ICPMsg *msg, IBus *bus);
