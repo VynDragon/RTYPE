@@ -20,23 +20,29 @@ int	Module_Config::setUp(IBus *bus)
 {
 	(void)bus;
 	std::ifstream configFile("config.conf");
-	if (!configFile.good())
-		return 1;
-	std::string line = "";
-	while (std::getline(configFile, line))
+	if (configFile.good())
 	{
-		if (line.length() > 0)
+		std::string line = "";
+		while (std::getline(configFile, line))
 		{
-			std::size_t cut = line.find_first_of('=');
-			if (cut == std::string::npos)
+			if (line.length() > 0)
 			{
-				configFile.close();
-				return 1;
+				std::size_t cut = line.find_first_of('=');
+				if (cut == std::string::npos)
+				{
+					configFile.close();
+					return 1;
+				}
+				map[line.substr(0, cut)] = line.substr(cut + 1, line.length() - cut - 1);
 			}
-			map[line.substr(0, cut)] = line.substr(cut + 1, line.length() - cut - 1);
 		}
+		configFile.close();
 	}
-	configFile.close();
+	else
+	{
+		map["ips"] = "60";
+		map["serverip"] = "127.0.0.1";
+	}
 	for (auto it = map.begin(); it != map.end(); it++)
 	{
 		bus->in(MSG_CONFIG_RESULT, &*it, nullptr);	

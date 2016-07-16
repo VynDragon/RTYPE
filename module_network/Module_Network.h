@@ -7,6 +7,10 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#elif defined(OS_WINDOWS)
+#include <winsock2.h>
+#pragma comment(lib, "ws2_32.lib")
+#include <Ws2tcpip.h>
 #endif
 
 #include <map>
@@ -53,7 +57,12 @@ private:
 
 	static const std::map<std::string, tfunctionType>	tfunctions;
 	static const std::map<uint8_t, msgFunctionType>		msgfunctions;
+#ifdef OS_LINUX
 	int 							socket;
+#elif defined(OS_WINDOWS)
+	SOCKET 							socket;
+	WSADATA							wsaData;
+#endif
 	bool							waitingEvent;
 	std::map<std::string, sockaddr_in>			clients;
 };
