@@ -37,11 +37,15 @@ void Engine::Worker::run(Engine *engine)
 {
 	try
 	{
-		while (!engine->doWork());
+		int ret = engine->doWork();
+		while (ret != EXIT_RETURN)
+		{
+			ret = engine->doWork();
+		}
 	}
 	catch(ExitException e)
 	{
-		delete engine;
-		exit(0);
 	}
+	engine->threadExited += 1;
+	return;
 }

@@ -8,5 +8,6 @@
 // DATA SENT VIA NETWORK MUSTN'T CONTAIN POINTERS, OTHERWISE IT WILL GET LOST
 #define MSG_NETWORK_EXPORT "networkmsg"// data is std::tuple<std::string, std::string, size_t, const void*> as address regex, type, size, data
 #define MSG_NETWORK_EXPORT_ACK "importantnetworkmsg"// data is std::tuple<std::string, std::string, size_t, const void*> as address regex, type, size, data
+#define MSG_NETWORK_EXPORT_LEAVE "weleavin'now"// no data, it sends type 3 packets to all the clients
 #define MSG_NETWORK_BIND "timetobind" // data is int as port
 #define MSG_NETWORK_ADDCLIENT "networkaddclient" // data is std::tuple<std::string, std::string, int> as id, address, and port 

@@ -20,5 +20,7 @@
 
 #define WAIT_SLEEP_TIME std::chrono::milliseconds(1)
 #define PORT 3100
+#define MAX_THREADS 256
+#define EXIT_RETURN 65653535
 
 

@@ -37,16 +37,20 @@ public:
 	virtual int						tearDown(IBus *bus);
 private:
 	int							send_msg(const void *data, IBus *bus);
+	int							exportleave(const void *data, IBus *bus);
 	int							tick(const void *data, IBus *bus);
 	int							send_msg_ack(const void *data, IBus *bus);
 	int							bind(const void *data, IBus *bus);
 	int							addclient(const void *data, IBus *bus);
 	
+
 	int							id0(std::string author, ICPMsg *msg, IBus *bus);
 	int							id1(std::string author, ICPMsg *msg, IBus *bus);
 	int							id2(std::string author, ICPMsg *msg, IBus *bus);
 	int							id3(std::string author, ICPMsg *msg, IBus *bus);
 	
+	int							sendICP(const void* data, uint16_t size, uint8_t identifier);
+
 	static const std::map<std::string, tfunctionType>	tfunctions;
 	static const std::map<uint8_t, msgFunctionType>		msgfunctions;
 	int 							socket;

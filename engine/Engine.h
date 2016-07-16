@@ -45,9 +45,11 @@ public:
 	void			stop();
 	int			doWork();
 	Bus			*getBus();
+	int			getNbWorkersNotExited();
 private:
 	Engine();
 	std::mutex		work;
 	std::vector<Worker*>	workers;
 	Bus			*bus;
+	int			threadExited = 0;
 };

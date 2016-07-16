@@ -16,7 +16,8 @@ const std::map<std::string, tfunctionType> Module_Network::tfunctions = {
 	{MSG_NETWORK_EXPORT_ACK, &Module_Network::send_msg_ack},
 	{MSG_NETWORK_BIND, &Module_Network::bind},
 	{MSG_TICK, &Module_Network::tick},
-	{MSG_NETWORK_ADDCLIENT, &Module_Network::addclient}
+	{MSG_NETWORK_ADDCLIENT, &Module_Network::addclient},
+	{MSG_NETWORK_EXPORT_LEAVE, &Module_Network::exportleave} // can't put a lmabda here :( [](const void *data, IBus *bus) -> int { sendICP(nullptr, 0, 3);return 0; }
 };
 
 
@@ -65,19 +66,29 @@ int	Module_Network::send_msg(const void *data, IBus *bus)
 {
 	(void)bus;
 	std::tuple<std::string, std::string, size_t, const void*> *datee = (std::tuple<std::string, std::string, size_t, const void*> *)data;
-	ICPMsg *icpmsg = (ICPMsg *)new uint8_t[std::get<0>(*datee).size() + std::get<1>(*datee).size() + std::get<2>(*datee) + sizeof(ICPMsg)]();
+	ICPMsg *icpmsg = (ICPMsg *)new uint8_t[std::get<0>(*datee).size() + std::get<1>(*datee).size() + std::get<2>(*datee) + sizeof(ICPMsg) + sizeof(uint16_t) + 2]();
 	icpmsg->identifier = 1;
 	icpmsg->datasize = std::get<2>(*datee);
-	memcpy(icpmsg->data, std::get<3>(*datee), std::get<2>(*datee)); 
+	memcpy(icpmsg->data, std::get<1>(*datee).c_str(), std::get<1>(*datee).size() + 1);
+	memcpy(icpmsg->data + std::get<1>(*datee).size() + 1, std::get<0>(*datee).c_str(), std::get<0>(*datee).size() + 1);
+	memcpy(icpmsg->data + std::get<1>(*datee).size()  + std::get<0>(*datee).size() + 2, &std::get<2>(*datee), sizeof(uint16_t));
+	memcpy(icpmsg->data + std::get<1>(*datee).size()  + std::get<0>(*datee).size() + sizeof(uint16_t) + 2, std::get<3>(*datee), std::get<2>(*datee));
 	for (auto it = clients.begin(); it != clients.end(); it++)
 	{
-		sendto(this->socket, icpmsg, std::get<0>(*datee).size() + std::get<1>(*datee).size() + std::get<2>(*datee) + sizeof(ICPMsg), 0, (sockaddr*)&it->second, sizeof(sockaddr_in));
+		sendto(this->socket, icpmsg, std::get<0>(*datee).size() + std::get<1>(*datee).size() + std::get<2>(*datee) + sizeof(ICPMsg) + sizeof(uint16_t) + 2, 0, (sockaddr*)&it->second, sizeof(sockaddr_in));
 	}
 	return 0;	
 }
 
 int	Module_Network::send_msg_ack(const void *data, IBus *bus)
 {
+	return 0;	
+}
+
+int	Module_Network::exportleave(const void *data, IBus *bus)
+{
+	sendICP(nullptr, 0, 3);
+	clients.clear();
 	return 0;	
 }
 
@@ -97,11 +108,11 @@ int	Module_Network::bind(const void *data, IBus *bus)
 int	Module_Network::tick(const void *data, IBus *bus)
 {
 	(void)data;
-	uint8_t	buffer[MAX_BUFFER_SIZE];
+	uint8_t	buffer[MAX_BUFFER_SIZE] = { 0 };
 	struct pollfd	fds[1];
 	fds[0].fd = socket;
 	fds[0].events = POLLIN;
-	int evs = poll(fds, clients.size(), 0);
+	int evs = poll(fds, 1, 0);
 	if (evs == 0)
 		return 0;
 	if (evs == -1)
@@ -126,13 +137,14 @@ int	Module_Network::tick(const void *data, IBus *bus)
 		}
 		if (!found)
 		{
-			std::cout << "received client" << std::endl;
 			int x = 1;
-			std::string namu = "client_" + x;
+			std::string namu = "client_";
+			namu += std::to_string(x);
 			while (clients.find(namu) != clients.end())
 			{
 				x++;
-				namu = "client_" + x;
+				namu = "client_";
+				namu += std::to_string(x);
 			}
 			clients[namu] = innit;
 			client = namu;
@@ -165,7 +177,7 @@ int			Module_Network::id1(std::string author, ICPMsg *msg, IBus *bus) // this is
 	int		x = 0;
 	uint16_t	*size;
 	void		*data;
-	while (regex != 0)
+	while (*regex != 0)
 	{
 		regex++;
 	}
@@ -175,21 +187,25 @@ int			Module_Network::id1(std::string author, ICPMsg *msg, IBus *bus) // this is
 		x++;
 	}
 	size = (uint16_t*)&regex[x+1];
-	data = size + sizeof(uint16_t);
+	data = size; // for some reason data = size + sizeof(uint16_t) was giving size + 4 instead of size + 2 ??? 1 bit shifting going on?
+	data += sizeof(uint16_t);
 	void *datacopy = new uint8_t[*size];
 	memcpy(datacopy, data, *size);
 	bus->in(std::string((char*)type), datacopy, delFunction<uint8_t*>);
+	datacopy = new uint8_t[*size];
+	memcpy(datacopy, data, *size);
 	bus->in(MSG_NETWORK_OUTWITHAUTHOR, new std::tuple<std::string, std::string, const void*>(author, std::string((char*)type), datacopy), [](const void* dateee) -> void { std::tuple<std::string, std::string, const void*> *dat = (std::tuple<std::string, std::string, const void*>*)dateee; delete  (uint8_t*)std::get<2>(*dat); delete dat;});
 	return 0;
 }
 int			Module_Network::id2(std::string author, ICPMsg *msg, IBus *bus) // this is an important message
 {
+	
 	uint8_t 	*type = msg->data;
 	uint8_t 	*regex = msg->data;
 	int		x = 0;
 	uint16_t	*size;
 	void		*data;
-	while (regex != 0)
+	while (*regex != 0)
 	{
 		regex++;
 	}
@@ -198,12 +214,13 @@ int			Module_Network::id2(std::string author, ICPMsg *msg, IBus *bus) // this is
 	{
 		x++;
 	}
-	auto addr = clients.find(author);
+	size = (uint16_t*)&regex[x+1];
+	data = size;
+	data += sizeof(uint16_t);
 	ICPMsg icpmsg;
 	icpmsg.identifier = 0;
+	auto addr = clients.find(author);
 	sendto(this->socket, &icpmsg, sizeof(ICPMsg), 0, (sockaddr*)&addr->second, sizeof(sockaddr_in));
-	size = (uint16_t*)&regex[x+1];
-	data = size + sizeof(uint16_t);
 	void *datacopy = new uint8_t[*size];
 	memcpy(datacopy, data, *size);
 	bus->in(std::string((char*)type), datacopy, delFunction<uint8_t*>);
@@ -231,5 +248,18 @@ int			Module_Network::addclient(const void *data, IBus *bus)
 	sin.sin_family = AF_INET;
 	sin.sin_port = htons(std::get<2>(*sdata));
 	clients[std::get<0>(*sdata)] = sin;
+	return 0;
 }
 
+int			Module_Network::sendICP(const void* data, uint16_t size, uint8_t identifier)
+{
+	ICPMsg *icpmsg = (ICPMsg *)new uint8_t[sizeof(ICPMsg) + size]();
+	icpmsg->identifier = identifier;
+	icpmsg->datasize = size;
+	memcpy(icpmsg->data, data, size);
+	for (auto it = clients.begin(); it != clients.end(); it++)
+	{
+		sendto(this->socket, icpmsg, sizeof(ICPMsg) + size, 0, (sockaddr*)&it->second, sizeof(sockaddr_in));
+	}
+	return 0;
+}

@@ -26,6 +26,10 @@ int	main(int ac, const char **av)
 	engine->getBus()->add("config", "config");
 	engine->start();
 	Engine::Worker::run(engine);
+	while (engine->getNbWorkersNotExited() > -1)
+	{
+		std::this_thread::sleep_for(WAIT_SLEEP_TIME);
+	}
 	delete engine;
 	return 0;
 }

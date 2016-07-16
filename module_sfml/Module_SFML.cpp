@@ -31,7 +31,7 @@ int	Module_SFML::input(const std::string& type, const void *data, IBus *bus)
 	auto doot = tfunctions.find(type);
 	if (doot != tfunctions.end())
 	{
-		return (this->*((*doot).second))(data, bus);
+		(this->*((*doot).second))(data, bus);
 	}
 	return 0;
 }
@@ -52,15 +52,15 @@ int	Module_SFML::tick(const void *data, IBus *bus)
 	sf::Event *event = new sf::Event();
 	while (window->pollEvent(*event))
         {
-		if (event->type == sf::Event::Closed)
+		/*if (event->type == sf::Event::Closed)
 		{
 			bus->in(MSG_EXIT, nullptr, nullptr, "");
 			delete event;
 		}
 		else
-		{
+		{*/
 			bus->in(MSG_SFML_EVENT, event, delFunction<sf::Event*>, ".*");
-		}
+		//}
 		event = new sf::Event();
         }
         update(data, bus); // good enough if this engine isn't reused

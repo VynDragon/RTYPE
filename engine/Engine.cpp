@@ -1,6 +1,7 @@
 #include "Engine.h"
 #include <chrono>
 #include <ratio>
+#include <iostream>
 
 Engine::Engine(const std::vector<std::string>& modules, int nbworker)
 {
@@ -12,6 +13,8 @@ Engine::Engine(const std::vector<std::string>& modules, int nbworker)
 	module++;
   }
   bus = bbus;
+  if (nbworker > MAX_THREADS)
+	  nbworker = MAX_THREADS;
   for (int i = 0; i < nbworker; i++)
   {
 	  workers.push_back(new Worker(this));
@@ -40,6 +43,10 @@ int	Engine::doWork()
 	}
 	work.unlock();
 	int ret = workCharge.module->input(workCharge.message->type, workCharge.message->data->data, workCharge.bus);
+	if (ret != 0 && ret != EXIT_RETURN)
+	{
+		std::cout << "there was an error in a " << workCharge.message->type << " execution" << std::endl;
+	}
 	delete workCharge.message;
 	return ret;
 }
@@ -54,4 +61,9 @@ void		Engine::start()
 Bus	*Engine::getBus()
 {
 	return this->bus;
+}
+
+int	Engine::getNbWorkersNotExited()
+{
+	return (int)this->workers.size() - threadExited;
 }
