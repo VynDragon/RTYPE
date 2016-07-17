@@ -18,7 +18,8 @@ const std::map<std::string, tfunctionType> Module_Game::tfunctions = {
 const std::map<std::string, tfunctionType> Module_Game::tfunctions = {
 	{MSG_NETWORK_JOIN, &Module_Game::playerjoin},
 	{MSG_NETWORK_LEAVE, &Module_Game::playerleave},
-	{MSG_NETWORK_OUTWITHAUTHOR, &Module_Game::msg}
+	{MSG_NETWORK_OUTWITHAUTHOR, &Module_Game::msg},
+	{MSG_TICK, &Module_Game::tick}
 };
 #endif
 
@@ -50,15 +51,37 @@ int	Module_Game::input(const std::string& type, const void *data, IBus *bus)
 }
 int	Module_Game::tearDown(IBus *bus)
 {
+	(void)bus;
 	return 0;
 }
 
+#if not defined(CLIENT)
 int	Module_Game::playerjoin(const void *data, IBus *bus)
 {
+	(void)bus;
+	std::string	*sdata = (std::string*)data;
 	std::cout << "Player joined" << std::endl;
+	if (games.size() == 0)
+		games.emplace_back();
+	if (games.back().addPlayer(*sdata))
+	{
+		games.emplace_back();
+		games.back().addPlayer(*sdata);
+	}
 	return 0;
 }
 
+int	Module_Game::tick(const void *data, IBus *bus)
+{
+	(void)data;
+	for (auto it = games.begin(); it != games.end(); it++)
+	{
+		it->sendDraw(bus);
+	}
+	return 0;
+}
+
+#endif
 int	Module_Game::playerleave(const void *data, IBus *bus)
 {
 	std::cout << "Player left" << std::endl;

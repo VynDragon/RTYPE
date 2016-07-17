@@ -331,5 +331,6 @@ int			Module_Network::send_msg_target(const void *data, IBus *bus)
 		return 1;
 	}
 	sendto(this->socket, icpmsg, std::get<1>(*datee).size() + std::get<2>(*datee).size() + std::get<3>(*datee) + sizeof(ICPMsg) + sizeof(uint16_t) + 2, 0, (sockaddr*)&client->second, sizeof(sockaddr_in));
+	delete icpmsg;
 	return 0;
 }

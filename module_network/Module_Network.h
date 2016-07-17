@@ -17,8 +17,6 @@
 #include <cstdint>
 
 
-#define MAX_BUFFER_SIZE 2048
-
 class Module_Network;
 
 struct ICPMsg {

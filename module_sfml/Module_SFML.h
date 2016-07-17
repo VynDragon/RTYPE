@@ -18,12 +18,17 @@ public:
 	virtual int						tearDown(IBus *bus);
 private:
 	sf::RenderWindow					*window;
+	sf::View						*view;
 	static const std::map<std::string, tfunctionType>	tfunctions;
 	std::map<std::string, sf::Texture*>			textures;
 	std::map<std::string, sf::Sprite*>			sprites;
 	int							tick(const void *data, IBus *bus);
 	int							addSprite(const void *data, IBus *bus);
+	int							addSpriteNetwork(const void *data, IBus *bus);
+	int							setSpritePosNetwork(const void *data, IBus *bus);
 	int							removeSprite(const void *data, IBus *bus);
 	int							setSpritePos(const void *data, IBus *bus);
+	int							setSpriteColor(const void *data, IBus *bus);
+	int							setSpriteColorNetwork(const void *data, IBus *bus);
 	int							update(const void *data, IBus *bus);
 };

@@ -22,5 +22,6 @@
 #define PORT 3100
 #define MAX_THREADS 256
 #define EXIT_RETURN 65653535
+#define MAX_BUFFER_SIZE 2048
 
 

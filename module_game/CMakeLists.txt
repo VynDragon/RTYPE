@@ -1,6 +1,6 @@
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	include_directories(${SFML_INCLUDE_DIR})
 endif()
-add_library(module_game SHARED Module_Game.cpp local.cpp)
+add_library(module_game SHARED Module_Game.cpp local.cpp Player.cpp Game.cpp)
 add_library(module_game_client SHARED Module_Game.cpp local.cpp)
 target_compile_definitions(module_game_client PUBLIC -DCLIENT)
