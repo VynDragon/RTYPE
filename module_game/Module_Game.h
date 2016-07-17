@@ -44,6 +44,7 @@ public:
 	int			tick();
 private:
 	void			starField(IBus *bus) const;
+	void			computeColors();
 	float			fieldOffset = 0;
 	std::vector<Player>	players;
 };

@@ -219,6 +219,6 @@ int		Module_SFML::removeSpriteNetwork(const void *data, IBus *bus)
 {
 	char *id = (char*)data;
 	std::string soos(id);
-	removeSprite(&id, bus);
+	removeSprite(&soos, bus);
 	return 0;
 }

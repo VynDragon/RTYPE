@@ -13,23 +13,33 @@ Game::~Game()
 {
 	
 }
-
+void Game::computeColors()
+{
+	int nb = 0;
+	for (auto it = players.begin(); it != players.end(); it++)
+	{
+		nb++;
+		switch (nb)
+		{
+		case 1:	it->setColor(100, 100, 255, 255);
+			break;
+		case 2:	it->setColor(255, 100, 100, 255);
+			break;
+		case 3:	it->setColor(255, 255, 100, 255);
+			break;
+		case 4:	it->setColor(100, 255, 100, 255);
+			break;
+		}
+	}
+}
 int	Game::addPlayer(const std::string& networkId)
 {
+	std::cout << players.size() << std::endl;
 	if (players.size() >= 4)
 		return 1;
 	players.emplace_back(networkId);
-	switch (players.size())
-	{
-		case 1:	players.back().setColor(100,100,255,255);
-			break;
-		case 2:	players.back().setColor(255,100,100,255);
-			break;
-		case 3:	players.back().setColor(255,255,100,255);
-			break;
-		case 4:	players.back().setColor(100,255,100,255);
-			break;
-	}
+	computeColors();
+	std::cout << players.size() << std::endl;
 	players.back().setXY((float)players.size() / 4.0f, 0.5f);
 	return 0;
 }
@@ -42,6 +52,7 @@ int	Game::removePlayer(const std::string& networkId, IBus *bus)
 		{
 			it->unDraw(bus, players);
 			players.erase(it);
+			computeColors();
 			return 0;
 		}
 	}
@@ -62,9 +73,9 @@ int	Game::sendDraw(IBus *bus) const
 
 int	Game::tick()
 {
-	fieldOffset -= 0.01f;
+	fieldOffset -= 0.005f;
 	if (fieldOffset <= -5.12f)
-		fieldOffset = 6.62f;
+		fieldOffset = 6.12f;
 	return 0;
 }
 
