@@ -38,7 +38,7 @@ public:
 	Game();
 	~Game();
 	int			addPlayer(const std::string& networkId);
-	int			removePlayer(const std::__cxx11::string& networkId, IBus* bus);
+	int			removePlayer(const std::string& networkId, IBus* bus);
 	int			sendDraw(IBus *bus) const;
 	Player			*getPlayerById(const std::string& networkId);
 	int			tick();

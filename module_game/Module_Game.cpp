@@ -55,7 +55,7 @@ int	Module_Game::tearDown(IBus *bus)
 	return 0;
 }
 
-#if not defined(CLIENT)
+#if !defined(CLIENT)
 int	Module_Game::playerjoin(const void *data, IBus *bus)
 {
 	(void)bus;
@@ -130,7 +130,31 @@ int	Module_Game::msg(const void *data, IBus *bus)
 	}
 	return 0;
 }
-
+#else // and there is microsoft forcing the function to be present...
+int	Module_Game::playerjoin(const void *data, IBus *bus)
+{
+	(void)bus;
+	(void)data;
+	return 0;
+}
+int	Module_Game::tick(const void *data, IBus *bus)
+{
+	(void)bus;
+	(void)data;
+	return 0;
+}
+int	Module_Game::playerleave(const void *data, IBus *bus)
+{
+	(void)bus;
+	(void)data;
+	return 0;
+}
+int	Module_Game::msg(const void *data, IBus *bus)
+{
+	(void)bus;
+	(void)data;
+	return 0;
+}
 #endif
 
 int	Module_Game::sfmlevent(const void *data, IBus *bus)

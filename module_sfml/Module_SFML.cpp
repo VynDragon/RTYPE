@@ -33,15 +33,19 @@ int	Module_SFML::setUp(IBus *bus)
 	view->reset(sf::FloatRect(0, 0, 1.0f, 1.0f));
 	view->setViewport(sf::FloatRect(0.f, 0.f, 1.f, 1.f));
 	window->setView(*view);
+	window->setActive(false);
 	return 0;
 }
 int	Module_SFML::input(const std::string& type, const void *data, IBus *bus)
 {
+	window->setActive(true);
 	auto doot = tfunctions.find(type);
+	int ret = 0;
 	if (doot != tfunctions.end())
 	{
-		(this->*((*doot).second))(data, bus);
+		ret = (this->*((*doot).second))(data, bus);
 	}
+	window->setActive(false);
 	return 0;
 }
 int	Module_SFML::tearDown(IBus *bus)

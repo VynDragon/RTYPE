@@ -347,7 +347,11 @@ int			Module_Network::send_msg_target(const void *data, IBus *bus)
 		delete icpmsg;
 		return 1;
 	}
+#ifdef OS_LINUX
 	sendto(this->socket, icpmsg, std::get<1>(*datee).size() + std::get<2>(*datee).size() + std::get<3>(*datee) + sizeof(ICPMsg) + sizeof(uint16_t) + 2, 0, (sockaddr*)&client->second, sizeof(sockaddr_in));
+#elif defined(OS_WINDOWS)
+	sendto(this->socket, (char*)icpmsg, std::get<1>(*datee).size() + std::get<2>(*datee).size() + std::get<3>(*datee) + sizeof(ICPMsg) + sizeof(uint16_t) + 2, 0, (sockaddr*)&client->second, sizeof(sockaddr_in));
+#endif
 	delete icpmsg;
 	return 0;
 }
