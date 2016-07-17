@@ -12,7 +12,9 @@ const std::map<std::string, tfunctionType> Module_SFML::tfunctions = {
 	{MSG_SFML_SETPOSITION_SPRITE, &Module_SFML::setSpritePos},
 	{MSG_SFML_UPDATE, &Module_SFML::update},
 	{MSG_SFML_ADD_SPRITE_NETWORK, &Module_SFML::addSpriteNetwork},
-	{MSG_SFML_SETPOSITION_SPRITE_NETWORK, &Module_SFML::setSpritePosNetwork}
+	{MSG_SFML_SETPOSITION_SPRITE_NETWORK, &Module_SFML::setSpritePosNetwork},
+	{MSG_SFML_SETCOLOR_SPRITE, &Module_SFML::setSpriteColor},
+	{MSG_SFML_SETCOLOR_SPRITE_NETWORK, &Module_SFML::setSpriteColorNetwork}
 };
 
 Module_SFML::Module_SFML()
@@ -197,5 +199,5 @@ int		Module_SFML::setSpriteColorNetwork(const void *data, IBus *bus)
 	b = g + sizeof(uint8_t);
 	a = b + sizeof(uint8_t);
 	std::tuple<std::string, uint8_t, uint8_t, uint8_t, uint8_t> pair(id, *r, *g, *b, *a);
-	setSpritePos(&pair, bus);
+	setSpriteColor(&pair, bus);
 }

@@ -76,17 +76,25 @@ int	Module_Game::tick(const void *data, IBus *bus)
 	(void)data;
 	for (auto it = games.begin(); it != games.end(); it++)
 	{
+		it->tick();
 		it->sendDraw(bus);
 	}
 	return 0;
 }
 
-#endif
 int	Module_Game::playerleave(const void *data, IBus *bus)
 {
 	std::cout << "Player left" << std::endl;
-	return 0;
+	(void)bus;
+	std::string *sdata = (std::string*)data;
+	for (auto it = games.begin(); it != games.end(); it++)
+	{
+		if (it->removePlayer(*sdata) == 0)
+			return 0;
+	}
+	return 1;
 }
+#endif
 
 int	Module_Game::msg(const void *data, IBus *bus)
 {

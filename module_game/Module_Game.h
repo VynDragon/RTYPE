@@ -20,11 +20,13 @@ public:
 	float		getX() const;
 	float		getY() const;
 	int		setXY(float x, float y);
+	int		setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 	int		sendDraw(IBus *bus, const std::vector<Player>& to) const;
 private:
 	std::string	networkId;
 	float		x = 0.5;
 	float		y = 0.5;
+	uint8_t		r = 255, g = 255, b = 255, a = 255;
 };
 
 class Game
@@ -33,8 +35,12 @@ public:
 	Game();
 	~Game();
 	int			addPlayer(const std::string& networkId);
+	int			removePlayer(const std::string& networkId);
 	int			sendDraw(IBus *bus) const;
+	int			tick();
 private:
+	void			starField(IBus *bus) const;
+	float			fieldOffset = 0;
 	std::vector<Player>	players;
 };
 

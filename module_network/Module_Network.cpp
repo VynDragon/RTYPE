@@ -132,6 +132,7 @@ int	Module_Network::tick(const void *data, IBus *bus)
 	struct pollfd	fds[1];
 	fds[0].fd = socket;
 	fds[0].events = POLLIN;
+
 #ifdef OS_LINUX
 	int evs = poll(fds, 1, 0);
 	if (evs == -1)
@@ -143,58 +144,74 @@ int	Module_Network::tick(const void *data, IBus *bus)
 #endif
 	if (evs == 0)
 		return 0;
-#ifdef OS_LINUX
-	if (fds[0].revents == POLLIN)
-#elif defined(OS_WINDOWS)
-	if (fds[0].revents & POLLIN)
-#endif
+	while (evs != 0 && evs != -1)
 	{
-		sockaddr_in	innit = {};
 #ifdef OS_LINUX
-		socklen_t	innitsize = sizeof(sockaddr_in);
-		int outish = recvfrom(fds[0].fd, buffer, MAX_BUFFER_SIZE, 0, (sockaddr*)&innit, &innitsize);
+		if (fds[0].revents == POLLIN)
 #elif defined(OS_WINDOWS)
-		int	innitsize = sizeof(sockaddr_in);
-		int outish = recvfrom(fds[0].fd, (char*)buffer, MAX_BUFFER_SIZE, 0, (sockaddr*)&innit, &innitsize);
+		if (fds[0].revents & POLLIN)
 #endif
-		if (outish == -1)
-			return outish;
-		bool found = false;
-		std::string client;
-		for (auto it = clients.begin(); it != clients.end(); it++)
 		{
-			if (it->second.sin_addr.s_addr == innit.sin_addr.s_addr && it->second.sin_port == innit.sin_port)
+			sockaddr_in	innit = {};
+#ifdef OS_LINUX
+			socklen_t	innitsize = sizeof(sockaddr_in);
+			int outish = recvfrom(fds[0].fd, buffer, MAX_BUFFER_SIZE, 0, (sockaddr*)&innit, &innitsize);
+#elif defined(OS_WINDOWS)
+			int	innitsize = sizeof(sockaddr_in);
+			int outish = recvfrom(fds[0].fd, (char*)buffer, MAX_BUFFER_SIZE, 0, (sockaddr*)&innit, &innitsize);
+#endif
+			if (outish == -1)
+				return outish;
+			bool found = false;
+			std::string client;
+			for (auto it = clients.begin(); it != clients.end(); it++)
 			{
-				found = true;
-				client = it->first;
-				break;
+				if (it->second.sin_addr.s_addr == innit.sin_addr.s_addr && it->second.sin_port == innit.sin_port)
+				{
+					found = true;
+					client = it->first;
+					break;
+				}
 			}
-		}
-		if (!found)
-		{
-			int x = 1;
-			std::string namu = "client_";
-			namu += std::to_string(x);
-			while (clients.find(namu) != clients.end())
+			if (!found)
 			{
-				x++;
-				namu = "client_";
+				int x = 1;
+				std::string namu = "client_";
 				namu += std::to_string(x);
+				while (clients.find(namu) != clients.end())
+				{
+					x++;
+					namu = "client_";
+					namu += std::to_string(x);
+				}
+				clients[namu] = innit;
+				client = namu;
+				bus->in(MSG_NETWORK_JOIN, new std::string(namu), delFunction<std::string*>);
 			}
-			clients[namu] = innit;
-			client = namu;
-			bus->in(MSG_NETWORK_JOIN, new std::string(namu), delFunction<std::string*>);
+			ICPMsg *msg = (ICPMsg*)&buffer;
+			auto moom = msgfunctions.find(msg->identifier);
+			if (moom != msgfunctions.end())
+			{
+				int ret = (this->*((*moom).second))(client, msg, bus);
+				if (ret != 0)
+					return ret;
+			}
+			else
+				return 1;
 		}
-		ICPMsg *msg = (ICPMsg*)&buffer;
-		auto moom = msgfunctions.find(msg->identifier);
-		if (moom != msgfunctions.end())
-		{
-			return (this->*((*moom).second))(client, msg, bus);
-		}
-		else
-			return 1;
+		else return fds[0].revents;
+#ifdef OS_LINUX
+		int evs = poll(fds, 1, 0);
+		if (evs == -1)
+			return evs;
+#elif defined(OS_WINDOWS) // kill it with fire
+		int evs = WSAPoll(fds, 1, 0);
+		if (evs == SOCKET_ERROR)
+			return evs;
+#endif
+		if (evs == 0)
+			return 0;
 	}
-	else return fds[0].revents;
 	return 0;
 }
 

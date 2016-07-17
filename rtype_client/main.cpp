@@ -19,7 +19,7 @@ int	main(int ac, const char **av)
 		std::string saude = "netwurk";
 		modulestoStart[saude + std::to_string(i)] = "network";
 	}*/
-	Engine	*engine = new Engine(modules, 1);
+	Engine	*engine = new Engine(modules, 8);
 	engine->getBus()->add("network", "network");
 	engine->getBus()->add("tick", "tick");
 	engine->getBus()->add("game", "game");
