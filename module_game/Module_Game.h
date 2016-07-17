@@ -7,6 +7,8 @@
 
 class Module_Game;
 
+#define KEY_AMOUNT_MOVE 0.05f
+
 typedef int (Module_Game::*tfunctionType)(const void*, IBus*);
 
 class Player
@@ -22,10 +24,11 @@ public:
 	int		setXY(float x, float y);
 	int		setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 	int		sendDraw(IBus *bus, const std::vector<Player>& to) const;
+	int		unDraw(IBus *bus, const std::vector<Player>& to) const;
 private:
 	std::string	networkId;
-	float		x = 0.5;
-	float		y = 0.5;
+	float		x = 0;
+	float		y = 0;
 	uint8_t		r = 255, g = 255, b = 255, a = 255;
 };
 
@@ -35,8 +38,9 @@ public:
 	Game();
 	~Game();
 	int			addPlayer(const std::string& networkId);
-	int			removePlayer(const std::string& networkId);
+	int			removePlayer(const std::__cxx11::string& networkId, IBus* bus);
 	int			sendDraw(IBus *bus) const;
+	Player			*getPlayerById(const std::string& networkId);
 	int			tick();
 private:
 	void			starField(IBus *bus) const;

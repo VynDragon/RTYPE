@@ -14,7 +14,8 @@ const std::map<std::string, tfunctionType> Module_SFML::tfunctions = {
 	{MSG_SFML_ADD_SPRITE_NETWORK, &Module_SFML::addSpriteNetwork},
 	{MSG_SFML_SETPOSITION_SPRITE_NETWORK, &Module_SFML::setSpritePosNetwork},
 	{MSG_SFML_SETCOLOR_SPRITE, &Module_SFML::setSpriteColor},
-	{MSG_SFML_SETCOLOR_SPRITE_NETWORK, &Module_SFML::setSpriteColorNetwork}
+	{MSG_SFML_SETCOLOR_SPRITE_NETWORK, &Module_SFML::setSpriteColorNetwork},
+	{MSG_SFML_REMOVE_SPRITE_NETWORK, &Module_SFML::removeSpriteNetwork}
 };
 
 Module_SFML::Module_SFML()
@@ -27,9 +28,9 @@ Module_SFML::~Module_SFML()
 int	Module_SFML::setUp(IBus *bus)
 {
 	(void)bus;
-	this->window = new sf::RenderWindow(sf::VideoMode(1024, 768), "RTYPE");
+	this->window = new sf::RenderWindow(sf::VideoMode(500, 500), "RTYPE");
 	this->view = new sf::View();
-	view->reset(sf::FloatRect(0, 0, 1, 1));
+	view->reset(sf::FloatRect(0, 0, 1.0f, 1.0f));
 	view->setViewport(sf::FloatRect(0.f, 0.f, 1.f, 1.f));
 	window->setView(*view);
 	return 0;
@@ -96,7 +97,7 @@ int	Module_SFML::addSprite(const void *data, IBus *bus)
 		sprites[sdata->first] = new sf::Sprite(*textures[sdata->second]);
 	sf::Vector2u texSize= textures[sdata->second]->getSize();
 	sprites[sdata->first]->setOrigin(texSize.x / 2, texSize.y / 2);
-	sprites[sdata->first]->setScale (0.01, 0.01);
+	sprites[sdata->first]->setScale (0.01f, 0.01f);
 	return 0;
 }
 
@@ -120,7 +121,7 @@ int	Module_SFML::setSpritePos(const void *data, IBus *bus)
 	auto it = sprites.find(std::get<0>(*sdata));
 	if (it != sprites.end())
 	{
-		it->second->setPosition(std::get<1>(*sdata), std::get<1>(*sdata));
+		it->second->setPosition(std::get<1>(*sdata), std::get<2>(*sdata));
 		return 0;
 	}
 	return 1;
@@ -164,8 +165,13 @@ int	Module_SFML::setSpritePosNetwork(const void *data, IBus *bus)
 		soos++;
 	if (id[soos] != 0)
 		return 1;
-	x = (float*)(&id[soos + 1]);
-	y = x + sizeof(float);
+	/*x = (float*)(&id[soos + 1]); HAPPY LITTLE BUGS
+	y = x + sizeof(float);*/
+	uint8_t* workptr = (uint8_t*)&id[soos];
+	workptr++;
+	x = (float*)workptr;
+	workptr += sizeof(float);
+	y = (float*)workptr;
 	std::tuple<std::string, float, float> pair(id, *x, *y);
 	setSpritePos(&pair, bus);
 	return 0;
@@ -173,6 +179,7 @@ int	Module_SFML::setSpritePosNetwork(const void *data, IBus *bus)
 
 int		Module_SFML::setSpriteColor(const void *data, IBus *bus)
 {
+	(void)bus;
 	std::tuple<std::string, uint8_t, uint8_t,uint8_t, uint8_t>* sdata = (std::tuple<std::string, uint8_t, uint8_t,uint8_t, uint8_t>*)data;
 	auto it = sprites.find(std::get<0>(*sdata));
 	if (it != sprites.end())
@@ -200,4 +207,14 @@ int		Module_SFML::setSpriteColorNetwork(const void *data, IBus *bus)
 	a = b + sizeof(uint8_t);
 	std::tuple<std::string, uint8_t, uint8_t, uint8_t, uint8_t> pair(id, *r, *g, *b, *a);
 	setSpriteColor(&pair, bus);
+	return 0;
+}
+
+
+int		Module_SFML::removeSpriteNetwork(const void *data, IBus *bus)
+{
+	char *id = (char*)data;
+	std::string soos(id);
+	removeSprite(&id, bus);
+	return 0;
 }

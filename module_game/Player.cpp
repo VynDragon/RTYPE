@@ -1,6 +1,7 @@
 #include "Module_Game.h"
 #include "../module_sfml/msg.h"
 #include "../module_network/msg.h"
+#include "../common/templatedTools.h"
 #include <cstring>
 
 Player::Player(const std::string& networkId)
@@ -10,6 +11,7 @@ Player::Player(const std::string& networkId)
 
 Player::~Player()
 {
+
 }
 
 std::string	Player::getNetworkId() const
@@ -95,6 +97,18 @@ int	Player::sendDraw(IBus* bus, const std::vector< Player >& to) const
 				delete (uint8_t*)std::get<4>(*sdata);
 				delete sdata;
 			});
+	}
+	return 0;
+}
+
+int		Player::unDraw(IBus *bus, const std::vector< Player >& to) const
+{
+	for (auto it = to.begin(); it != to.end(); it++)
+	{
+		size_t size = this->getNetworkId().size() + 1;
+		uint8_t *doush = new uint8_t[size];
+		memcpy(doush, this->getNetworkId().c_str(), this->getNetworkId().size() + 1);
+		bus->in(MSG_NETWORK_EXPORT_TARGET, new std::tuple<std::string, std::string, std::string, size_t, const void*>(it->getNetworkId(), ".*", MSG_SFML_REMOVE_SPRITE_NETWORK, sizeof(uint8_t) * size, doush), delFunction<char*>);
 	}
 	return 0;
 }

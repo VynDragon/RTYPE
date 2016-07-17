@@ -89,20 +89,49 @@ int	Module_Game::playerleave(const void *data, IBus *bus)
 	std::string *sdata = (std::string*)data;
 	for (auto it = games.begin(); it != games.end(); it++)
 	{
-		if (it->removePlayer(*sdata) == 0)
+		if (it->removePlayer(*sdata, bus) == 0)
 			return 0;
 	}
 	return 1;
 }
-#endif
 
 int	Module_Game::msg(const void *data, IBus *bus)
 {
 	std::tuple<std::string, std::string,const void*>* sdata = (std::tuple<std::string, std::string ,const void*>*)data;
-	std::cout << std::get<0>(*sdata) << " sent " << std::get<1>(*sdata) << " with " << (void*)std::get<2>(*sdata) << std::endl;
+	//std::cout << std::get<0>(*sdata) << " sent " << std::get<1>(*sdata) << " with " << (void*)std::get<2>(*sdata) << std::endl;
+	
+	if (std::get<1>(*sdata) == MSG_SFML_EVENT)
+	{
+		sf::Event *event = (sf::Event*)std::get<2>(*sdata);
+		if (event->type == sf::Event::KeyPressed)
+		{
+			Player *soos = nullptr;
+			for (auto it = games.begin(); it != games.end(); it++)
+			{
+				soos = it->getPlayerById(std::get<0>(*sdata));
+				if (soos != nullptr)
+					break;
+			}
+			if (soos == nullptr)
+				return 1;
+			switch (event->key.code)
+			{
+				case sf::Keyboard::Up : soos->moveY(-KEY_AMOUNT_MOVE);
+					break;
+				case sf::Keyboard::Down : soos->moveY(KEY_AMOUNT_MOVE);
+					break;
+				case sf::Keyboard::Left : soos->moveX(-KEY_AMOUNT_MOVE);
+					break;
+				case sf::Keyboard::Right : soos->moveX(KEY_AMOUNT_MOVE);
+					break;
+			}
+					
+		}
+	}
 	return 0;
 }
 
+#endif
 
 int	Module_Game::sfmlevent(const void *data, IBus *bus)
 {
@@ -116,11 +145,23 @@ int	Module_Game::sfmlevent(const void *data, IBus *bus)
 		}
 		return EXIT_RETURN;
 	}
+	else if (event->type == sf::Event::KeyPressed)
+	{
+		sf::Event *evcp = new sf::Event;
+		evcp->type = sf::Event::KeyPressed;
+		evcp->key.code = event->key.code;
+		bus->in(MSG_NETWORK_EXPORT, new std::tuple<std::string, std::string, size_t, const void*>("game", MSG_SFML_EVENT, sizeof(sf::Event::EventType) + sizeof(sf::Event::KeyEvent), evcp), [](const void *data) -> void {
+				std::tuple<std::string, std::string, size_t, const void*>* sdata = (std::tuple<std::string, std::string, size_t, const void*>*)data;
+				delete (uint8_t*)std::get<3>(*sdata);
+				delete sdata;
+		} , "network");
+	}
 	return 0;
 }
 int	Module_Game::exit(const void *data, IBus *bus)
 {
-	
+	(void)data;
+	(void)bus;
 	return EXIT_RETURN;
 }
 int	Module_Game::config(const void *data, IBus *bus)

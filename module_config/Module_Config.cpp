@@ -19,6 +19,8 @@ Module_Config::~Module_Config()
 int	Module_Config::setUp(IBus *bus)
 {
 	(void)bus;
+	map["ips"] = "60";
+	map["serverip"] = "127.0.0.1";
 	std::ifstream configFile("config.conf");
 	if (configFile.good())
 	{
@@ -37,11 +39,6 @@ int	Module_Config::setUp(IBus *bus)
 			}
 		}
 		configFile.close();
-	}
-	else
-	{
-		map["ips"] = "60";
-		map["serverip"] = "127.0.0.1";
 	}
 	for (auto it = map.begin(); it != map.end(); it++)
 	{
