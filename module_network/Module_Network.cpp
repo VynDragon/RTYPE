@@ -7,6 +7,8 @@
 #ifdef OS_LINUX
 #include <unistd.h>
 #include <poll.h>
+#elif defined(OS_WINDOWS)
+
 #endif
 #include <tuple>
 #include <cstring>
@@ -41,6 +43,9 @@ Module_Network::~Module_Network()
 }
 int	Module_Network::setUp(IBus *bus)
 {
+#ifdef OS_WINDOWS
+	WSAStartup(MAKEWORD(2, 0), &wsaData);
+#endif
 	this->socket = ::socket(PF_INET, SOCK_DGRAM, 0);
 	if (this->socket == -1)
 		return errno;
@@ -59,7 +64,12 @@ int	Module_Network::input(const std::string& type, const void *data, IBus *bus)
 int	Module_Network::tearDown(IBus *bus)
 {
 	(void)bus;
+#ifdef OS_LINUX
 	close(this->socket);
+#elif defined(OS_WINDOWS)
+	closesocket(this->socket);
+#endif
+
 	return 0;
 }
 
@@ -76,7 +86,11 @@ int	Module_Network::send_msg(const void *data, IBus *bus)
 	memcpy(icpmsg->data + std::get<1>(*datee).size()  + std::get<0>(*datee).size() + sizeof(uint16_t) + 2, std::get<3>(*datee), std::get<2>(*datee));
 	for (auto it = clients.begin(); it != clients.end(); it++)
 	{
+#ifdef OS_LINUX
 		sendto(this->socket, icpmsg, std::get<0>(*datee).size() + std::get<1>(*datee).size() + std::get<2>(*datee) + sizeof(ICPMsg) + sizeof(uint16_t) + 2, 0, (sockaddr*)&it->second, sizeof(sockaddr_in));
+#elif defined(OS_WINDOWS)
+		sendto(this->socket, (char*)icpmsg, std::get<0>(*datee).size() + std::get<1>(*datee).size() + std::get<2>(*datee) + sizeof(ICPMsg) + sizeof(uint16_t) + 2, 0, (sockaddr*)&it->second, sizeof(sockaddr_in));
+#endif
 	}
 	delete icpmsg;
 	return 0;	
@@ -118,16 +132,31 @@ int	Module_Network::tick(const void *data, IBus *bus)
 	struct pollfd	fds[1];
 	fds[0].fd = socket;
 	fds[0].events = POLLIN;
+#ifdef OS_LINUX
 	int evs = poll(fds, 1, 0);
-	if (evs == 0)
-		return 0;
 	if (evs == -1)
 		return evs;
+#elif defined(OS_WINDOWS) // kill it with fire
+	int evs = WSAPoll(fds, 1, 0);
+	if (evs == SOCKET_ERROR)
+		return evs;
+#endif
+	if (evs == 0)
+		return 0;
+#ifdef OS_LINUX
 	if (fds[0].revents == POLLIN)
+#elif defined(OS_WINDOWS)
+	if (fds[0].revents & POLLIN)
+#endif
 	{
 		sockaddr_in	innit = {};
+#ifdef OS_LINUX
 		socklen_t	innitsize = sizeof(sockaddr_in);
 		int outish = recvfrom(fds[0].fd, buffer, MAX_BUFFER_SIZE, 0, (sockaddr*)&innit, &innitsize);
+#elif defined(OS_WINDOWS)
+		int	innitsize = sizeof(sockaddr_in);
+		int outish = recvfrom(fds[0].fd, (char*)buffer, MAX_BUFFER_SIZE, 0, (sockaddr*)&innit, &innitsize);
+#endif
 		if (outish == -1)
 			return outish;
 		bool found = false;
@@ -194,7 +223,7 @@ int			Module_Network::id1(std::string author, ICPMsg *msg, IBus *bus) // this is
 	}
 	size = (uint16_t*)&regex[x+1];
 	data = size; // for some reason data = size + sizeof(uint16_t) was giving size + 4 instead of size + 2 ??? 1 bit shifting going on?
-	data += sizeof(uint16_t);
+	data = ((char*)data) + sizeof(uint16_t);
 	void *datacopy = new uint8_t[*size];
 	memcpy(datacopy, data, *size);
 	bus->in(std::string((char*)type), datacopy, delFunction<uint8_t*>);
@@ -222,11 +251,15 @@ int			Module_Network::id2(std::string author, ICPMsg *msg, IBus *bus) // this is
 	}
 	size = (uint16_t*)&regex[x+1];
 	data = size;
-	data += sizeof(uint16_t);
+	data = ((char*)data) + sizeof(uint16_t);
 	ICPMsg icpmsg;
 	icpmsg.identifier = 0;
 	auto addr = clients.find(author);
+#ifdef OS_LINUX
 	sendto(this->socket, &icpmsg, sizeof(ICPMsg), 0, (sockaddr*)&addr->second, sizeof(sockaddr_in));
+#elif defined(OS_WINDOWS)
+	sendto(this->socket, (char*)&icpmsg, sizeof(ICPMsg), 0, (sockaddr*)&addr->second, sizeof(sockaddr_in));
+#endif
 	void *datacopy = new uint8_t[*size];
 	memcpy(datacopy, data, *size);
 	bus->in(std::string((char*)type), datacopy, delFunction<uint8_t*>);
@@ -251,7 +284,11 @@ int			Module_Network::addclient(const void *data, IBus *bus)
 	(void)bus;
 	std::tuple<std::string, std::string, int>* sdata = (std::tuple<std::string, std::string, int>*)data;
 	struct sockaddr_in sin;
+#ifdef OS_LINUX
 	inet_pton(AF_INET, std::get<1>(*sdata).c_str(), &(sin.sin_addr));
+#elif defined(OS_WINDOWS)
+	InetPton(AF_INET, std::get<1>(*sdata).c_str(), &(sin.sin_addr));
+#endif
 	sin.sin_family = AF_INET;
 	sin.sin_port = htons(std::get<2>(*sdata));
 	clients[std::get<0>(*sdata)] = sin;
@@ -266,7 +303,11 @@ int			Module_Network::sendICP(const void* data, uint16_t size, uint8_t identifie
 	memcpy(icpmsg->data, data, size);
 	for (auto it = clients.begin(); it != clients.end(); it++)
 	{
+#ifdef OS_LINUX
 		sendto(this->socket, icpmsg, sizeof(ICPMsg) + size, 0, (sockaddr*)&it->second, sizeof(sockaddr_in));
+#elif defined(OS_WINDOWS)
+		sendto(this->socket, (char*)icpmsg, sizeof(ICPMsg) + size, 0, (sockaddr*)&it->second, sizeof(sockaddr_in));
+#endif
 	}
 	delete icpmsg;
 	return 0;

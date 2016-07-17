@@ -6,9 +6,8 @@
 #include <ctime>
 #elif defined(OS_WINDOWS)
 #define CLOCK_REALTIME 0
-#define HAVE_STRUCT_TIMESPEC 
-struct timespec { long tv_sec; long tv_nsec; };
 #include <windows.h>
+//struct timespec { long tv_sec; long tv_nsec; };
 int clock_gettime(int, struct timespec *spec);
 #endif
 #include <thread>
