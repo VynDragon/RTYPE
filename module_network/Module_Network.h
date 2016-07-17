@@ -37,6 +37,7 @@ public:
 	virtual int						tearDown(IBus *bus);
 private:
 	int							send_msg(const void *data, IBus *bus);
+	int							send_msg_target(const void *data, IBus *bus);
 	int							exportleave(const void *data, IBus *bus);
 	int							tick(const void *data, IBus *bus);
 	int							send_msg_ack(const void *data, IBus *bus);

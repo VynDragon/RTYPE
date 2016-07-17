@@ -17,7 +17,8 @@ const std::map<std::string, tfunctionType> Module_Network::tfunctions = {
 	{MSG_NETWORK_BIND, &Module_Network::bind},
 	{MSG_TICK, &Module_Network::tick},
 	{MSG_NETWORK_ADDCLIENT, &Module_Network::addclient},
-	{MSG_NETWORK_EXPORT_LEAVE, &Module_Network::exportleave} // can't put a lmabda here :( [](const void *data, IBus *bus) -> int { sendICP(nullptr, 0, 3);return 0; }
+	{MSG_NETWORK_EXPORT_LEAVE, &Module_Network::exportleave}, // can't put a lambda here :( [](const void *data, IBus *bus) -> int { sendICP(nullptr, 0, 3);return 0; }
+	{MSG_NETWORK_EXPORT_TARGET, &Module_Network::send_msg_target}
 };
 
 
@@ -77,16 +78,21 @@ int	Module_Network::send_msg(const void *data, IBus *bus)
 	{
 		sendto(this->socket, icpmsg, std::get<0>(*datee).size() + std::get<1>(*datee).size() + std::get<2>(*datee) + sizeof(ICPMsg) + sizeof(uint16_t) + 2, 0, (sockaddr*)&it->second, sizeof(sockaddr_in));
 	}
+	delete icpmsg;
 	return 0;	
 }
 
 int	Module_Network::send_msg_ack(const void *data, IBus *bus)
 {
+	(void)data;
+	(void)bus;
 	return 0;	
 }
 
 int	Module_Network::exportleave(const void *data, IBus *bus)
 {
+	(void)data;
+	(void)bus;
 	sendICP(nullptr, 0, 3);
 	clients.clear();
 	return 0;	
@@ -242,6 +248,7 @@ int			Module_Network::id3(std::string author, ICPMsg *msg, IBus *bus) // this is
 
 int			Module_Network::addclient(const void *data, IBus *bus)
 {
+	(void)bus;
 	std::tuple<std::string, std::string, int>* sdata = (std::tuple<std::string, std::string, int>*)data;
 	struct sockaddr_in sin;
 	inet_pton(AF_INET, std::get<1>(*sdata).c_str(), &(sin.sin_addr));
@@ -261,5 +268,27 @@ int			Module_Network::sendICP(const void* data, uint16_t size, uint8_t identifie
 	{
 		sendto(this->socket, icpmsg, sizeof(ICPMsg) + size, 0, (sockaddr*)&it->second, sizeof(sockaddr_in));
 	}
+	delete icpmsg;
+	return 0;
+}
+
+int			Module_Network::send_msg_target(const void *data, IBus *bus)
+{
+	(void)bus;
+	std::tuple<std::string, std::string, std::string, size_t, const void*> *datee = (std::tuple<std::string, std::string, std::string, size_t, const void*> *)data;
+	ICPMsg *icpmsg = (ICPMsg *)new uint8_t[std::get<1>(*datee).size() + std::get<2>(*datee).size() + std::get<3>(*datee) + sizeof(ICPMsg) + sizeof(uint16_t) + 2]();
+	icpmsg->identifier = 1;
+	icpmsg->datasize = std::get<3>(*datee);
+	memcpy(icpmsg->data, std::get<2>(*datee).c_str(), std::get<2>(*datee).size() + 1);
+	memcpy(icpmsg->data + std::get<2>(*datee).size() + 1, std::get<1>(*datee).c_str(), std::get<1>(*datee).size() + 1);
+	memcpy(icpmsg->data + std::get<2>(*datee).size()  + std::get<1>(*datee).size() + 2, &std::get<3>(*datee), sizeof(uint16_t));
+	memcpy(icpmsg->data + std::get<2>(*datee).size()  + std::get<1>(*datee).size() + sizeof(uint16_t) + 2, std::get<4>(*datee), std::get<3>(*datee));
+	auto client = clients.find(std::get<0>(*datee));
+	if (client == clients.end())
+	{
+		delete icpmsg;
+		return 1;
+	}
+	sendto(this->socket, icpmsg, std::get<1>(*datee).size() + std::get<2>(*datee).size() + std::get<3>(*datee) + sizeof(ICPMsg) + sizeof(uint16_t) + 2, 0, (sockaddr*)&client->second, sizeof(sockaddr_in));
 	return 0;
 }
