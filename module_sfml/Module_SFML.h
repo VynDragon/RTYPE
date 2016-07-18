@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <cstdint>
 
 #include "../common/common.h"
 #include "../common/module.h"

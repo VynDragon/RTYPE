@@ -4,6 +4,7 @@
 #include "../common/module.h"
 #include <map>
 #include <vector>
+#include <cstdint>
 
 class Module_Game;
 

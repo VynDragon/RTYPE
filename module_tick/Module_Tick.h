@@ -7,7 +7,9 @@
 #elif defined(OS_WINDOWS)
 #define CLOCK_REALTIME 0
 #include <windows.h>
-//struct timespec { long tv_sec; long tv_nsec; };
+#if _MSC_VER < 1900 
+struct timespec { long tv_sec; long tv_nsec; };
+#endif
 int clock_gettime(int, struct timespec *spec);
 #endif
 #include <thread>
