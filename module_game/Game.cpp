@@ -100,6 +100,8 @@ int	Game::tick(IBus *bus)
 		name += std::to_string(bydoscounter);
 		bydoses.emplace_back(name, bus);
 		bydoscounter++;
+		if (bydoscounter > 10000)
+			bydoscounter = 0;
 	}
 	std::vector<std::string> tmp;
 	for (auto tompo = players.begin(); tompo != players.end(); tompo++)

@@ -22,5 +22,6 @@ Bydos::Bydos(const std::string& networkId, IBus *bus) : Drawable(networkId, "Byd
 
 Bydos::~Bydos()
 {
-	bus->remove(networkId);
+	if (bus->exist(networkId))
+		bus->remove(networkId);
 }
