@@ -2,6 +2,7 @@
 #include "../module_network/msg.h"
 #include "../module_config/msg.h"
 #include "../module_sfml/msg.h"
+#include "../module_bydos1/msg.h"
 #include "../common/templatedTools.h"
 #include "../common/messages.h"
 #include <SFML/Window/Event.hpp>
@@ -19,6 +20,7 @@ const std::map<std::string, tfunctionType> Module_Game::tfunctions = {
 	{MSG_NETWORK_JOIN, &Module_Game::playerjoin},
 	{MSG_NETWORK_LEAVE, &Module_Game::playerleave},
 	{MSG_NETWORK_OUTWITHAUTHOR, &Module_Game::msg},
+	{MSG_AI_MOVE, &Module_Game::bydos_move},
 	{MSG_TICK, &Module_Game::tick}
 };
 #endif
@@ -35,6 +37,7 @@ Module_Game::~Module_Game()
 int	Module_Game::setUp(IBus *bus)
 {
 #ifdef CLIENT
+	(void)bus;
 #else
 	bus->in(MSG_NETWORK_BIND, new int(3100), delFunction<int*>, "network");
 #endif
@@ -76,7 +79,7 @@ int	Module_Game::tick(const void *data, IBus *bus)
 	(void)data;
 	for (auto it = games.begin(); it != games.end(); it++)
 	{
-		it->tick();
+		it->tick(bus);
 		it->sendDraw(bus);
 	}
 	return 0;
@@ -97,6 +100,7 @@ int	Module_Game::playerleave(const void *data, IBus *bus)
 
 int	Module_Game::msg(const void *data, IBus *bus)
 {
+	(void)bus;
 	std::tuple<std::string, std::string,const void*>* sdata = (std::tuple<std::string, std::string ,const void*>*)data;
 	//std::cout << std::get<0>(*sdata) << " sent " << std::get<1>(*sdata) << " with " << (void*)std::get<2>(*sdata) << std::endl;
 	
@@ -124,12 +128,32 @@ int	Module_Game::msg(const void *data, IBus *bus)
 					break;
 				case sf::Keyboard::Right : soos->moveX(KEY_AMOUNT_MOVE);
 					break;
+				default: break; 
 			}
 					
 		}
 	}
 	return 0;
 }
+
+int	Module_Game::bydos_move(const void *data, IBus *bus)
+{
+	(void)bus;
+	std::tuple<std::string, float, float>* sdata = (std::tuple<std::string, float, float>*)data;
+	Bydos *soos = nullptr;
+	for (auto it = games.begin(); it != games.end(); it++)
+	{
+		soos = it->getBydosById(std::get<0>(*sdata));
+		if (soos != nullptr)
+			break;
+	}
+	if (soos == nullptr)
+		return 1;
+	soos->moveX(std::get<1>(*sdata));
+	soos->moveY(std::get<2>(*sdata));
+	return 0;
+}
+
 #else // and there is microsoft forcing the function to be present...
 int	Module_Game::playerjoin(const void *data, IBus *bus)
 {
@@ -150,6 +174,12 @@ int	Module_Game::playerleave(const void *data, IBus *bus)
 	return 0;
 }
 int	Module_Game::msg(const void *data, IBus *bus)
+{
+	(void)bus;
+	(void)data;
+	return 0;
+}
+int	Module_Game::bydos_move(const void *data, IBus *bus)
 {
 	(void)bus;
 	(void)data;

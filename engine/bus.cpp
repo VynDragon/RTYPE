@@ -84,7 +84,7 @@ int	Bus::addModule(const std::string& module)
 	if (ifType != moduleTypes.end())
 	{
 		std::string error = MODULE_LOAD_ERROR;
-		throw BusException(error + "didn't find module");
+		throw BusException(error + "module already exist");
 		return 1;
 	}
 	moduleTypes[type.getModuleName()] = type;
@@ -108,7 +108,7 @@ int Bus::add(const std::string& address, const std::string& type)
 		error += "setup of module ";
 		error += address;
 		throw BusException(error + " returned non zero value");
-		return 1;
+		return 2;
 	}
 	return 0;
 }
@@ -203,8 +203,50 @@ inputRunnable	Bus::out()
 		BusMessage* message = this->queue.front();
 		this->queue.pop();
 		this->iolock.unlock();
-		return inputRunnable(true, this->modules[message->destination], message, this);
+		auto mod = this->modules.find(message->destination);
+		if (mod == this->modules.end())
+		{
+			delete message;
+			return inputRunnable(false);
+		}
+		return inputRunnable(true, mod->second, message, this);
 	}
 	this->iolock.unlock();
 	return inputRunnable(false);
+}
+
+int		Bus::remove(const std::string& address)
+{
+	this->iolock.lock();
+	auto itAdr = modules.find(address);
+	if (itAdr == modules.end())
+	{
+		std::string error = MODULE_REMOVE_ERROR;
+		throw BusException(error + "module instance not found");
+		return 1;
+	}
+	if (modules[address]->tearDown(this) != 0)
+	{
+		std::string error = MODULE_REMOVE_ERROR;
+		error += "tearDown of module ";
+		error += address;
+		throw BusException(error + " returned non zero value");
+		return 1;
+	}
+	delete modules[address];
+	modules.erase(address);
+	this->iolock.unlock();
+	return 0;
+}
+
+
+bool		Bus::loaded(const std::string& module)
+{
+	auto that = this->moduleTypes.find(module);
+	return !(that == this->moduleTypes.end()); 
+}
+bool		Bus::exist(const std::string& address)
+{
+	auto that = this->modules.find(address);
+	return !(that == this->modules.end()); 
 }

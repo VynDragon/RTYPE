@@ -14,5 +14,5 @@ public:
 	virtual int	input(const std::string& type, const void *data, IBus *bus);
 	virtual int	tearDown(IBus *bus);
 private:
-	std::map<std::string, std::string>	map;
+	std::string	name;
 };

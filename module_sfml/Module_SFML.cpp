@@ -46,7 +46,7 @@ int	Module_SFML::input(const std::string& type, const void *data, IBus *bus)
 		ret = (this->*((*doot).second))(data, bus);
 	}
 	window->setActive(false);
-	return 0;
+	return ret;
 }
 int	Module_SFML::tearDown(IBus *bus)
 {

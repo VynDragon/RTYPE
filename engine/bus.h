@@ -16,6 +16,7 @@
 #include <queue>
 #define MODULE_LOAD_ERROR "Module loading error: "
 #define MODULE_ADD_ERROR "Module adding error: "
+#define MODULE_REMOVE_ERROR "Module removing error: "
 
 struct inputRunnable;
 
@@ -81,7 +82,10 @@ public:
 	virtual ~Bus();
 	int 				addModule(const std::string& module);
 	int				add(const std::string& address, const std::string& type);
+	int				remove(const std::string& address);
 	int 				in(const std::string& type, const void *data, destructorTypeConst deleteData, const std::string& regexString = ".*");
+	bool				loaded(const std::string& module);
+	bool				exist(const std::string& address);
 	inputRunnable			out();
 protected:
 	std::queue<BusMessage*>			queue; // !! share BusMessage instances's data		
